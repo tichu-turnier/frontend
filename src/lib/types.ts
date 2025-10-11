@@ -34,7 +34,7 @@ export interface TournamentMatch {
   team1_id: string
   team2_id: string
   table_number: number
-  status: 'pending' | 'playing' | 'confirming' | 'completed'
+  status: 'playing' | 'confirming' | 'completed'
   team1_confirmed: boolean
   team2_confirmed: boolean
   completed_at?: string

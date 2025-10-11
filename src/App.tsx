@@ -11,6 +11,14 @@ import CreateTournament from './pages/admin/CreateTournament'
 import TournamentManagement from './pages/admin/TournamentManagement'
 import ProtectedRoute from './components/admin/ProtectedRoute'
 
+// Team Pages
+import TeamLogin from './pages/team/TeamLogin'
+import MatchOverview from './pages/team/MatchOverview'
+import GameEntry from './pages/team/GameEntry'
+
+// Other Pages
+import HomePage from './pages/HomePage'
+
 const theme = createTheme({
   palette: {
     mode: 'light',
@@ -35,14 +43,19 @@ function App() {
       <CssBaseline />
       <Router>
         <Routes>
-          {/* Redirect root to admin */}
-          <Route path="/" element={<Navigate to="/admin/dashboard" replace />} />
+          {/* Home Page */}
+          <Route path="/" element={<HomePage />} />
           
           {/* Admin Routes */}
           <Route path="/admin/login" element={<LoginPage />} />
           <Route path="/admin/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           <Route path="/admin/create" element={<ProtectedRoute><CreateTournament /></ProtectedRoute>} />
           <Route path="/admin/tournament/:id" element={<ProtectedRoute><TournamentManagement /></ProtectedRoute>} />
+          
+          {/* Team Routes */}
+          <Route path="/team/login" element={<TeamLogin />} />
+          <Route path="/team/match" element={<MatchOverview />} />
+          <Route path="/team/game" element={<GameEntry />} />
         </Routes>
       </Router>
       <ToastContainer position="bottom-right" />
