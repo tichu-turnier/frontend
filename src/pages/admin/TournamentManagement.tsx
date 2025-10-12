@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import {
   Typography,
@@ -61,6 +61,7 @@ export default function TournamentManagement() {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
   const { user, session } = useAuth()
   const navigate = useNavigate()
+  const isLoadingRef = useRef(false)
 
   useEffect(() => {
     if (!user || !id) return
@@ -68,7 +69,9 @@ export default function TournamentManagement() {
   }, [user, id])
 
   const fetchTournamentData = async () => {
-    if (!id) return
+    if (!id || isLoadingRef.current) return
+    
+    isLoadingRef.current = true
 
     // Fetch tournament
     const { data: tournamentData } = await supabase
@@ -87,23 +90,29 @@ export default function TournamentManagement() {
       `)
       .eq('tournament_id', id)
 
-    // Calculate bomb counts for each team
+    // Calculate bomb counts for all teams in one query
     if (teamsData) {
-      for (const team of teamsData) {
-        const { data: bombData } = await supabase
-          .from('game_participants')
-          .select(`
-            bomb_count,
-            games!inner(
-              tournament_matches!inner(
-                tournament_id
-              )
+      const allPlayerIds = teamsData.flatMap(team => [team.player1_id, team.player2_id])
+      
+      const { data: bombData } = await supabase
+        .from('game_participants')
+        .select(`
+          player_id,
+          bomb_count,
+          games!inner(
+            tournament_matches!inner(
+              tournament_id
             )
-          `)
-          .in('player_id', [team.player1_id, team.player2_id])
-          .eq('games.tournament_matches.tournament_id', id)
-        
-        team.total_bombs = bombData?.reduce((sum, p) => sum + (p.bomb_count || 0), 0) || 0
+          )
+        `)
+        .in('player_id', allPlayerIds)
+        .eq('games.tournament_matches.tournament_id', id)
+      
+      // Group bomb counts by team
+      for (const team of teamsData) {
+        team.total_bombs = bombData
+          ?.filter(p => p.player_id === team.player1_id || p.player_id === team.player2_id)
+          .reduce((sum, p) => sum + (p.bomb_count || 0), 0) || 0
       }
     }
 
@@ -127,6 +136,7 @@ export default function TournamentManagement() {
       setEditDescription(tournamentData.description || '')
     }
     setLoading(false)
+    isLoadingRef.current = false
   }
 
   const startTournament = async () => {
