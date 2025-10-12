@@ -52,8 +52,8 @@ export default function MatchOverview() {
       .from('tournament_matches')
       .select(`
         *,
-        team1:team1_id(id, team_name, player1:player1_id(name), player2:player2_id(name)),
-        team2:team2_id(id, team_name, player1:player1_id(name), player2:player2_id(name)),
+        team1:team1_id(id, team_name, player1:player1_id(id, name), player2:player2_id(id, name)),
+        team2:team2_id(id, team_name, player1:player1_id(id, name), player2:player2_id(id, name)),
         games(*, game_participants(*))
       `)
       .or(`team1_id.eq.${teamId},team2_id.eq.${teamId}`)
@@ -158,6 +158,13 @@ export default function MatchOverview() {
   const canAddGame = games.length < maxGames
   const canConfirm = games.length === maxGames && !ownConfirmed
 
+  // Create player ID to name mapping
+  const playerNames: Record<string, string> = {
+    [match.team1.player1?.id]: match.team1.player1?.name || 'Player 1',
+    [match.team1.player2?.id]: match.team1.player2?.name || 'Player 2',
+    [match.team2.player1?.id]: match.team2.player1?.name || 'Player 3',
+    [match.team2.player2?.id]: match.team2.player2?.name || 'Player 4'
+  }
   return (
     <>
       <AppBar position="static">
@@ -313,17 +320,10 @@ export default function MatchOverview() {
                   <TableBody>
                     {viewGame.game_participants?.sort((a: any, b: any) => {
                       if (a.team !== b.team) return a.team - b.team
-                      return (a.player_id || '').localeCompare(b.player_id || '')
-                    }).map((participant: any, index: number) => {
-                      const playerNames = [
-                        match.team1.player1?.name || 'Player 1',
-                        match.team1.player2?.name || 'Player 2',
-                        match.team2.player1?.name || 'Player 3',
-                        match.team2.player2?.name || 'Player 4'
-                      ]
-                      return (
-                        <TableRow key={participant.player_id || `participant-${index}`}>
-                          <TableCell>{playerNames[index] || `Team ${participant.team} Player`}</TableCell>
+                      return (playerNames[a.player_id] || '').localeCompare(playerNames[b.player_id] || '')
+                    }).map((participant: any) => (
+                        <TableRow key={participant.player_id}>
+                          <TableCell>{playerNames[participant.player_id] || `Team ${participant.team} Player`}</TableCell>
                           <TableCell>{participant.position || 'Double Win'}</TableCell>
                           <TableCell>
                             {participant.grand_tichu_call ? 'Grand Tichu' : participant.tichu_call ? 'Small Tichu' : 'None'}
@@ -332,8 +332,7 @@ export default function MatchOverview() {
                           </TableCell>
                           <TableCell>{'💣'.repeat(participant.bomb_count || 0) || 'None'}</TableCell>
                         </TableRow>
-                      )
-                    })}
+                      ))}
                   </TableBody>
                 </Table>
                 <Box sx={{ mt: 2 }}>

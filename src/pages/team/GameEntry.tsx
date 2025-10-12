@@ -41,12 +41,15 @@ export default function GameEntry() {
   const navigate = useNavigate()
 
   const players = match ? [
-    match.team1.player1?.name || 'Player 1',
-    match.team1.player2?.name || 'Player 2', 
-    match.team2.player1?.name || 'Player 3',
-    match.team2.player2?.name || 'Player 4'
-  ] : []
-  const teams = [1, 1, 2, 2]
+    { name: match.team1.player1?.name || 'Player 1', team: 1, id: match.team1.player1?.id },
+    { name: match.team1.player2?.name || 'Player 2', team: 1, id: match.team1.player2?.id },
+    { name: match.team2.player1?.name || 'Player 3', team: 2, id: match.team2.player1?.id },
+    { name: match.team2.player2?.name || 'Player 4', team: 2, id: match.team2.player2?.id }
+  ].sort((a, b) => {
+    if (a.team !== b.team) return a.team - b.team
+    return a.name.localeCompare(b.name)
+  }) : []
+  const teams = players.map(p => p.team)
 
   useEffect(() => {
     const auth = localStorage.getItem('teamAuth')
@@ -131,18 +134,26 @@ export default function GameEntry() {
 
     setMatch(match)
     
+    // Create player ID to name mapping
+    const playerNames: Record<string, string> = {
+      [match.team1.player1?.id]: match.team1.player1?.name || 'Player 1',
+      [match.team1.player2?.id]: match.team1.player2?.name || 'Player 2',
+      [match.team2.player1?.id]: match.team2.player1?.name || 'Player 3',
+      [match.team2.player2?.id]: match.team2.player2?.name || 'Player 4'
+    }
+    
     // Load game data into form
     const participants = gameData.game_participants
     const newPositions = [null, null, null, null]
     const newTichuCalls: TichuCall[] = ['NONE', 'NONE', 'NONE', 'NONE']
     const newBombCounts = [0, 0, 0, 0]
     
-    // Sort participants by team and player_id to match the UI order
+    // Sort participants by team and player name to match the UI order
     const sortedParticipants = participants.sort((a: any, b: any) => {
       if (a.team !== b.team) return a.team - b.team
-      return (a.player_id || '').localeCompare(b.player_id || '')
+      return (playerNames[a.player_id] || '').localeCompare(playerNames[b.player_id] || '')
     })
-    
+
     sortedParticipants.forEach((p: any, idx: number) => {
       if (idx < 4) {
         newPositions[idx] = p.position
@@ -263,44 +274,15 @@ export default function GameEntry() {
         return
       }
 
-      const participants = [
-        { 
-          player_id: match.team1.player1.id, 
-          team: 1, 
-          position: positions[0], 
-          bomb_count: bombCounts[0], 
-          tichu_call: tichuCalls[0] === 'ST',
-          grand_tichu_call: tichuCalls[0] === 'GT',
-          tichu_success: positions[0] === 1 && tichuCalls[0] !== 'NONE'
-        },
-        { 
-          player_id: match.team1.player2.id, 
-          team: 1, 
-          position: positions[1], 
-          bomb_count: bombCounts[1], 
-          tichu_call: tichuCalls[1] === 'ST',
-          grand_tichu_call: tichuCalls[1] === 'GT',
-          tichu_success: positions[1] === 1 && tichuCalls[1] !== 'NONE'
-        },
-        { 
-          player_id: match.team2.player1.id, 
-          team: 2, 
-          position: positions[2], 
-          bomb_count: bombCounts[2], 
-          tichu_call: tichuCalls[2] === 'ST',
-          grand_tichu_call: tichuCalls[2] === 'GT',
-          tichu_success: positions[2] === 1 && tichuCalls[2] !== 'NONE'
-        },
-        { 
-          player_id: match.team2.player2.id, 
-          team: 2, 
-          position: positions[3], 
-          bomb_count: bombCounts[3], 
-          tichu_call: tichuCalls[3] === 'ST',
-          grand_tichu_call: tichuCalls[3] === 'GT',
-          tichu_success: positions[3] === 1 && tichuCalls[3] !== 'NONE'
-        }
-      ]
+      const participants = players.map((player, idx) => ({
+        player_id: player.id,
+        team: player.team,
+        position: positions[idx],
+        bomb_count: bombCounts[idx],
+        tichu_call: tichuCalls[idx] === 'ST',
+        grand_tichu_call: tichuCalls[idx] === 'GT',
+        tichu_success: positions[idx] === 1 && tichuCalls[idx] !== 'NONE'
+      }))
 
       const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/submit-scores`, {
         method: 'POST',
@@ -368,7 +350,7 @@ export default function GameEntry() {
           </TableRow>
           <TableRow>
             {players.map((player) => (
-              <TableCell align="center">{player}</TableCell>
+              <TableCell align="center">{player.name}</TableCell>
             ))}
           </TableRow>
         </TableHead>
@@ -403,7 +385,7 @@ export default function GameEntry() {
                           minWidth: "36px",
                           height: "32px",
                         }}
-                        aria-label={`Set the finishing order for ${player} to the next available position`}
+                        aria-label={`Set the finishing order for ${player.name} to the next available position`}
                         onClick={() => {
                           setPositions((prev) => {
                             const newPositions = [...prev];
@@ -433,7 +415,7 @@ export default function GameEntry() {
                         minWidth: "36px",
                         height: "32px",
                       }}
-                      aria-label={`Reset the finishing order for ${player}`}
+                      aria-label={`Reset the finishing order for ${player.name}`}
                       onClick={() => {
                         setPositions((prev) => {
                           const newPositions = [...prev];
@@ -458,7 +440,7 @@ export default function GameEntry() {
                   size="small"
                   value={tichuCalls[idx]}
                   onChange={(_, newVal) => handleTichuCallChange(idx, newVal, setTichuCalls)}
-                  aria-label={`Tichu call for player ${player}`}
+                  aria-label={`Tichu call for player ${player.name}`}
                 >
                   {["ST", "GT"].map((tichu) => (
                     <ToggleButton key={tichu} value={tichu} aria-label={`Tichu call ${tichu}`}>
@@ -480,7 +462,7 @@ export default function GameEntry() {
                     height: "32px",
                     opacity: bombCounts[idx] === 0 ? "60%" : "100%",
                   }}
-                  aria-label={`Increment bomb count for player ${player}`}
+                  aria-label={`Increment bomb count for player ${player.name}`}
                   onClick={() => {
                     setBombCounts((prev) => {
                       const newCounter = [...prev];
