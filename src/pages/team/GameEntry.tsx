@@ -110,10 +110,15 @@ export default function GameEntry() {
     if (firstIndex !== -1 && secondIndex !== -1 && teams[firstIndex] === teams[secondIndex]) {
       const winningTeam = teams[firstIndex]
       setDoubleWinTeam(winningTeam)
-      // Clear positions of losing team
-      setPositions(prev => prev.map((pos, idx) => 
-        teams[idx] !== winningTeam ? null : pos
-      ))
+      // Clear positions of losing team only if they're not already cleared
+      const needsClearing = positions.some((pos, idx) => 
+        teams[idx] !== winningTeam && pos !== null
+      )
+      if (needsClearing) {
+        setPositions(prev => prev.map((pos, idx) => 
+          teams[idx] !== winningTeam ? null : pos
+        ))
+      }
     } else {
       setDoubleWinTeam(null)
     }
