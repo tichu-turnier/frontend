@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import {
   Table,
   TableHead,
@@ -36,6 +36,8 @@ export default function GameEntry() {
   const [error, setError] = useState<string | null>(null)
   const [beschissFlag, setBeschissFlag] = useState<boolean>(false)
   const [isSaving, setIsSaving] = useState<boolean>(false)
+  const [editGameId, setEditGameId] = useState<string | null>(null)
+  const [searchParams] = useSearchParams()
   const navigate = useNavigate()
 
   const players = match ? [
@@ -55,8 +57,15 @@ export default function GameEntry() {
     
     const parsedAuth = JSON.parse(auth)
     setTeamAuth(parsedAuth)
-    fetchCurrentMatch(parsedAuth.teamId)
-  }, [navigate])
+    
+    const editId = searchParams.get('edit')
+    if (editId) {
+      setEditGameId(editId)
+      fetchGameForEdit(editId, parsedAuth.teamId)
+    } else {
+      fetchCurrentMatch(parsedAuth.teamId)
+    }
+  }, [navigate, searchParams])
 
   useEffect(() => updateDoubleWin(), [positions])
   useEffect(() => updateBonusPoints(), [tichuCalls, teamScores, positions, doubleWinTeam])
@@ -82,6 +91,70 @@ export default function GameEntry() {
     }
 
     setMatch(matchData)
+  }
+
+  const fetchGameForEdit = async (gameId: string, teamId: string) => {
+    const { data: gameData, error: gameError } = await supabase
+      .from('games')
+      .select(`
+        *,
+        match:match_id(
+          *,
+          team1:team1_id(id, team_name, player1:player1_id(name), player2:player2_id(name)),
+          team2:team2_id(id, team_name, player1:player1_id(name), player2:player2_id(name))
+        ),
+        game_participants(*)
+      `)
+      .eq('id', gameId)
+      .single()
+
+    if (gameError || !gameData) {
+      toast.error('Game not found')
+      navigate('/team/match')
+      return
+    }
+
+    // Check if team has access to this game
+    const match = gameData.match
+    if (match.team1_id !== teamId && match.team2_id !== teamId) {
+      toast.error('Access denied')
+      navigate('/team/match')
+      return
+    }
+
+    // Check if match is still editable
+    if (match.team1_confirmed || match.team2_confirmed) {
+      toast.error('Match already confirmed, cannot edit')
+      navigate('/team/match')
+      return
+    }
+
+    setMatch(match)
+    
+    // Load game data into form
+    const participants = gameData.game_participants
+    const newPositions = [null, null, null, null]
+    const newTichuCalls: TichuCall[] = ['NONE', 'NONE', 'NONE', 'NONE']
+    const newBombCounts = [0, 0, 0, 0]
+    
+    // Sort participants by team and player_id to match the UI order
+    const sortedParticipants = participants.sort((a: any, b: any) => {
+      if (a.team !== b.team) return a.team - b.team
+      return (a.player_id || '').localeCompare(b.player_id || '')
+    })
+    
+    sortedParticipants.forEach((p: any, idx: number) => {
+      if (idx < 4) {
+        newPositions[idx] = p.position
+        newTichuCalls[idx] = p.grand_tichu_call ? 'GT' : p.tichu_call ? 'ST' : 'NONE'
+        newBombCounts[idx] = p.bomb_count || 0
+      }
+    })
+    
+    setPositions(newPositions)
+    setTichuCalls(newTichuCalls)
+    setBombCounts(newBombCounts)
+    setTeamScores([gameData.team1_score, gameData.team2_score])
   }
 
   const handleTeam1ScoreChange = (_event: Event, value: number | number[]) => {
@@ -229,7 +302,16 @@ export default function GameEntry() {
           'Content-Type': 'application/json',
           'team-token': teamAuth.accessToken,
         },
-        body: JSON.stringify({
+        body: JSON.stringify(editGameId ? {
+          game_id: editGameId,
+          team1_score: doubleWinTeam !== null ? 0 : teamScores[0],
+          team2_score: doubleWinTeam !== null ? 0 : teamScores[1],
+          team1_total_score: teamTotalScores[0],
+          team2_total_score: teamTotalScores[1],
+          team1_double_win: doubleWinTeam === 1,
+          team2_double_win: doubleWinTeam === 2,
+          participants: participants
+        } : {
           match_id: match.id,
           game_number: gameNumber,
           team1_score: doubleWinTeam !== null ? 0 : teamScores[0],
@@ -243,7 +325,7 @@ export default function GameEntry() {
       })
 
       if (response.ok) {
-        toast.success('Game saved successfully!')
+        toast.success(editGameId ? 'Game updated successfully!' : 'Game saved successfully!')
         navigate('/team/match')
       } else {
         const errorData = await response.json()
@@ -264,7 +346,7 @@ export default function GameEntry() {
   return (
     <Box sx={{ p: 3 }}>
       <Typography variant="h5" gutterBottom>
-        Enter Game Results
+        {editGameId ? 'Edit Game Results' : 'Enter Game Results'}
       </Typography>
 
       <Table sx={{ "& .MuiTableCell-root": { py: 1, px: 1 } }}>

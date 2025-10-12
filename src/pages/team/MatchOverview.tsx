@@ -17,8 +17,13 @@ import {
   AppBar,
   Toolbar,
   IconButton,
+  Collapse,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from '@mui/material'
-import { Logout as LogoutIcon, Add as AddIcon } from '@mui/icons-material'
+import { Logout as LogoutIcon, Add as AddIcon, Visibility as ViewIcon, Edit as EditIcon } from '@mui/icons-material'
 import { supabase } from '../../lib/supabase'
 import { toast } from 'react-toastify'
 
@@ -27,6 +32,7 @@ export default function MatchOverview() {
   const [games, setGames] = useState<any[]>([])
   const [teamAuth, setTeamAuth] = useState<any>(null)
   const [loading, setLoading] = useState(true)
+  const [viewGame, setViewGame] = useState<any>(null)
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -48,7 +54,7 @@ export default function MatchOverview() {
         *,
         team1:team1_id(id, team_name, player1:player1_id(name), player2:player2_id(name)),
         team2:team2_id(id, team_name, player1:player1_id(name), player2:player2_id(name)),
-        games(*)
+        games(*, game_participants(*))
       `)
       .or(`team1_id.eq.${teamId},team2_id.eq.${teamId}`)
       .order('created_at', { ascending: false })
@@ -213,16 +219,31 @@ export default function MatchOverview() {
                       <TableCell>Game</TableCell>
                       <TableCell align="right">{match.team1.team_name}</TableCell>
                       <TableCell align="right">{match.team2.team_name}</TableCell>
+                      <TableCell align="center">Actions</TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {games.map((game, index) => (
-                      <TableRow key={game.id}>
-                        <TableCell>{index + 1}</TableCell>
-                        <TableCell align="right">{game.team1_total_score}</TableCell>
-                        <TableCell align="right">{game.team2_total_score}</TableCell>
-                      </TableRow>
-                    ))}
+                    {games.map((game, index) => {
+                      const canEdit = !match.team1_confirmed && !match.team2_confirmed
+                      return (
+                        <TableRow key={game.id}>
+                          <TableCell>{index + 1}</TableCell>
+                          <TableCell align="right">{game.team1_total_score}</TableCell>
+                          <TableCell align="right">{game.team2_total_score}</TableCell>
+                          <TableCell align="center">
+                            <Button size="small" onClick={() => setViewGame(game)} startIcon={<ViewIcon />}/>
+                            {canEdit && (
+                              <Button 
+                                size="small" 
+                                onClick={() => navigate(`/team/game?edit=${game.id}`)}
+                                startIcon={<EditIcon />}
+                                sx={{ ml: 1 }}
+                              />
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      )
+                    })}
                   </TableBody>
                 </Table>
               </TableContainer>
@@ -273,6 +294,63 @@ export default function MatchOverview() {
             </Typography>
           </Box>
         )}
+        
+        {/* Game View Dialog */}
+        <Dialog open={!!viewGame} onClose={() => setViewGame(null)} maxWidth="md" fullWidth>
+          <DialogTitle>Game {games.findIndex(g => g.id === viewGame?.id) + 1} Details</DialogTitle>
+          <DialogContent>
+            {viewGame && (
+              <Box>
+                <Table size="small">
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>Player</TableCell>
+                      <TableCell>Position</TableCell>
+                      <TableCell>Tichu Call</TableCell>
+                      <TableCell>Bombs</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {viewGame.game_participants?.sort((a: any, b: any) => {
+                      if (a.team !== b.team) return a.team - b.team
+                      return (a.player_id || '').localeCompare(b.player_id || '')
+                    }).map((participant: any, index: number) => {
+                      const playerNames = [
+                        match.team1.player1?.name || 'Player 1',
+                        match.team1.player2?.name || 'Player 2',
+                        match.team2.player1?.name || 'Player 3',
+                        match.team2.player2?.name || 'Player 4'
+                      ]
+                      return (
+                        <TableRow key={participant.player_id || `participant-${index}`}>
+                          <TableCell>{playerNames[index] || `Team ${participant.team} Player`}</TableCell>
+                          <TableCell>{participant.position || 'Double Win'}</TableCell>
+                          <TableCell>
+                            {participant.grand_tichu_call ? 'Grand Tichu' : participant.tichu_call ? 'Small Tichu' : 'None'}
+                            {(participant.tichu_call || participant.grand_tichu_call) && 
+                             ` (${participant.tichu_success ? 'Success' : 'Failed'})`}
+                          </TableCell>
+                          <TableCell>{'💣'.repeat(participant.bomb_count || 0) || 'None'}</TableCell>
+                        </TableRow>
+                      )
+                    })}
+                  </TableBody>
+                </Table>
+                <Box sx={{ mt: 2 }}>
+                  <Typography variant="subtitle2">Scores:</Typography>
+                  <Typography>Base Score: {match.team1.team_name} {viewGame.team1_score} - {viewGame.team2_score} {match.team2.team_name}</Typography>
+                  <Typography>Total Score: {match.team1.team_name} {viewGame.team1_total_score} - {viewGame.team2_total_score} {match.team2.team_name}</Typography>
+                  {(viewGame.team1_double_win || viewGame.team2_double_win) && (
+                    <Typography color="primary">Double Win: {viewGame.team1_double_win ? match.team1.team_name : match.team2.team_name}</Typography>
+                  )}
+                </Box>
+              </Box>
+            )}
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setViewGame(null)}>Close</Button>
+          </DialogActions>
+        </Dialog>
       </Box>
     </>
   )
