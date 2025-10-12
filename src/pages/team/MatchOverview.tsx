@@ -74,38 +74,59 @@ export default function MatchOverview() {
   const handleConfirmMatch = async () => {
     if (!match || !teamAuth) return
 
-    const isTeam1 = match.team1.id === teamAuth.teamId
-    const confirmField = isTeam1 ? 'team1_confirmed' : 'team2_confirmed'
+    try {
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/confirm-match`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${supabase.supabaseKey}`,
+          'Content-Type': 'application/json',
+          'team-token': teamAuth.accessToken,
+        },
+        body: JSON.stringify({
+          match_id: match.id
+        }),
+      })
 
-    const { error } = await supabase
-      .from('tournament_matches')
-      .update({ [confirmField]: true })
-      .eq('id', match.id)
-
-    if (error) {
-      toast.error('Failed to confirm match')
-    } else {
-      toast.success('Match confirmed!')
-      fetchCurrentMatch(teamAuth.teamId)
+      if (response.ok) {
+        toast.success('Match confirmed!')
+        fetchCurrentMatch(teamAuth.teamId)
+      } else {
+        const errorData = await response.json()
+        toast.error(`Failed to confirm: ${errorData.error || 'Unknown error'}`)
+      }
+    } catch (err) {
+      toast.error(`Confirm failed: ${err instanceof Error ? err.message : 'Unknown error'}`)
+      console.error('Confirm exception:', err)
     }
   }
 
   const handleRetractConfirmation = async () => {
     if (!match || !teamAuth) return
 
-    const isTeam1 = match.team1.id === teamAuth.teamId
-    const confirmField = isTeam1 ? 'team1_confirmed' : 'team2_confirmed'
+    try {
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/confirm-match`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${supabase.supabaseKey}`,
+          'Content-Type': 'application/json',
+          'team-token': teamAuth.accessToken,
+        },
+        body: JSON.stringify({
+          match_id: match.id,
+          unconfirm: true
+        }),
+      })
 
-    const { error } = await supabase
-      .from('tournament_matches')
-      .update({ [confirmField]: false })
-      .eq('id', match.id)
-
-    if (error) {
-      toast.error('Failed to retract confirmation')
-    } else {
-      toast.success('Confirmation retracted')
-      fetchCurrentMatch(teamAuth.teamId)
+      if (response.ok) {
+        toast.success('Confirmation retracted')
+        fetchCurrentMatch(teamAuth.teamId)
+      } else {
+        const errorData = await response.json()
+        toast.error(`Failed to retract: ${errorData.error || 'Unknown error'}`)
+      }
+    } catch (err) {
+      toast.error(`Retract failed: ${err instanceof Error ? err.message : 'Unknown error'}`)
+      console.error('Retract exception:', err)
     }
   }
 

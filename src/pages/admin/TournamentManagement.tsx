@@ -94,7 +94,7 @@ export default function TournamentManagement() {
     if (!user || !id) return
 
     try {
-      const response = await fetch('http://127.0.0.1:54321/functions/v1/start-tournament', {
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/start-tournament`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${session?.access_token}`,
@@ -115,7 +115,7 @@ export default function TournamentManagement() {
     if (!user || !id) return
 
     try {
-      const response = await fetch('http://127.0.0.1:54321/functions/v1/start-next-round', {
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/start-next-round`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${session?.access_token}`,
@@ -140,7 +140,7 @@ export default function TournamentManagement() {
     if (!user || !id) return
 
     try {
-      const response = await fetch('http://127.0.0.1:54321/functions/v1/finish-tournament', {
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/finish-tournament`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${session?.access_token}`,

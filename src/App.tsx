@@ -41,7 +41,7 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <Router>
+      <Router basename='/frontend'>
         <Routes>
           {/* Home Page */}
           <Route path="/" element={<HomePage />} />

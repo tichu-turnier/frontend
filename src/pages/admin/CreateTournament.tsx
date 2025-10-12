@@ -32,7 +32,7 @@ export default function CreateTournament() {
     setError('')
 
     try {
-      const response = await fetch('http://127.0.0.1:54321/functions/v1/create-tournament', {
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-tournament`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${session?.access_token}`,

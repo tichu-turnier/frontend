@@ -217,7 +217,7 @@ export default function GameEntry() {
         }
       ]
 
-      const response = await fetch('http://127.0.0.1:54321/functions/v1/submit-scores', {
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/submit-scores`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${supabase.supabaseKey}`,
