@@ -7,7 +7,9 @@ import {
   Typography,
   Box,
   Alert,
+  IconButton,
 } from '@mui/material'
+import { Home as HomeIcon } from '@mui/icons-material'
 import { useAuth } from '../../hooks/useAuth'
 
 export default function LoginPage() {
@@ -48,7 +50,13 @@ export default function LoginPage() {
       minHeight: '100vh',
       bgcolor: 'grey.100'
     }}>
-      <Paper elevation={3} sx={{ p: 4, maxWidth: 400, width: '100%', mx: 2 }}>
+      <Paper elevation={3} sx={{ p: 4, maxWidth: 400, width: '100%', mx: 2, position: 'relative' }}>
+        <IconButton 
+          onClick={() => navigate('/')}
+          sx={{ position: 'absolute', top: 8, right: 8 }}
+        >
+          <HomeIcon />
+        </IconButton>
         <Typography variant="h4" component="h1" gutterBottom align="center">
           Tournament Admin
         </Typography>

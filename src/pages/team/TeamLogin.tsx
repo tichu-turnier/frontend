@@ -14,7 +14,9 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  IconButton,
 } from '@mui/material'
+import { Home as HomeIcon } from '@mui/icons-material'
 import { supabase } from '../../lib/supabase'
 
 const adjectives = ['rot', 'blau', 'gruen', 'gelb', 'lila', 'orange', 'rosa', 'schwarz', 'weiss', 'silber', 'gold', 'hell', 'dunkel', 'schnell', 'langsam', 'gross', 'klein', 'froh', 'stark', 'wild']
@@ -99,7 +101,13 @@ export default function TeamLogin() {
       minHeight: '100vh',
       bgcolor: 'grey.100'
     }}>
-      <Paper elevation={3} sx={{ p: 4, maxWidth: 400, width: '100%', mx: 2 }}>
+      <Paper elevation={3} sx={{ p: 4, maxWidth: 400, width: '100%', mx: 2, position: 'relative' }}>
+        <IconButton 
+          onClick={() => navigate('/')}
+          sx={{ position: 'absolute', top: 8, right: 8 }}
+        >
+          <HomeIcon />
+        </IconButton>
         <Typography variant="h4" component="h1" gutterBottom align="center">
           Team Login
         </Typography>
