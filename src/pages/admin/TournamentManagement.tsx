@@ -50,6 +50,10 @@ export default function TournamentManagement() {
   const [showFinishConfirm, setShowFinishConfirm] = useState(false)
   const [showTeamCodes, setShowTeamCodes] = useState(false)
   const [expandedRound, setExpandedRound] = useState<number | false>(false)
+  const [editingName, setEditingName] = useState(false)
+  const [editingDescription, setEditingDescription] = useState(false)
+  const [editName, setEditName] = useState('')
+  const [editDescription, setEditDescription] = useState('')
   const { user, session } = useAuth()
   const navigate = useNavigate()
 
@@ -94,6 +98,10 @@ export default function TournamentManagement() {
     setTournament(tournamentData)
     setTeams(teamsData || [])
     setMatches(matchesData || [])
+    if (tournamentData) {
+      setEditName(tournamentData.name)
+      setEditDescription(tournamentData.description || '')
+    }
     setLoading(false)
   }
 
@@ -244,6 +252,40 @@ export default function TournamentManagement() {
     }
   }
 
+  const updateTournamentName = async () => {
+    if (!tournament || !id) return
+
+    const { error } = await supabase
+      .from('tournaments')
+      .update({ name: editName })
+      .eq('id', id)
+
+    if (error) {
+      toast.error('Failed to update tournament name')
+    } else {
+      setTournament({ ...tournament, name: editName })
+      setEditingName(false)
+      toast.success('Tournament name updated')
+    }
+  }
+
+  const updateTournamentDescription = async () => {
+    if (!tournament || !id) return
+
+    const { error } = await supabase
+      .from('tournaments')
+      .update({ description: editDescription })
+      .eq('id', id)
+
+    if (error) {
+      toast.error('Failed to update tournament description')
+    } else {
+      setTournament({ ...tournament, description: editDescription })
+      setEditingDescription(false)
+      toast.success('Tournament description updated')
+    }
+  }
+
   const matchesByRound = matches.reduce((acc, match) => {
     const round = match.tournament_rounds?.round_number || 0
     if (!acc[round]) acc[round] = []
@@ -273,9 +315,27 @@ export default function TournamentManagement() {
           >
             <ArrowBackIcon />
           </IconButton>
-          <Typography variant="h6" component="div">
-            {tournament.name}
-          </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            {editingName ? (
+              <>
+                <TextField
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
+                  size="small"
+                  sx={{ '& .MuiInputBase-input': { color: 'white' } }}
+                />
+                <Button color="inherit" onClick={updateTournamentName}>Save</Button>
+                <Button color="inherit" onClick={() => { setEditingName(false); setEditName(tournament.name) }}>Cancel</Button>
+              </>
+            ) : (
+              <>
+                <Typography variant="h6" component="div">
+                  {tournament.name}
+                </Typography>
+                <Button color="inherit" size="small" onClick={() => setEditingName(true)}>Edit</Button>
+              </>
+            )}
+          </Box>
         </Toolbar>
       </AppBar>
 
@@ -288,6 +348,28 @@ export default function TournamentManagement() {
               <Typography variant="h6" gutterBottom>
                 Tournament Status
               </Typography>
+              {editingDescription ? (
+                <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1, mb: 2 }}>
+                  <TextField
+                    fullWidth
+                    multiline
+                    rows={2}
+                    value={editDescription}
+                    onChange={(e) => setEditDescription(e.target.value)}
+                    size="small"
+                    placeholder="Tournament description"
+                  />
+                  <Button onClick={updateTournamentDescription}>Save</Button>
+                  <Button onClick={() => { setEditingDescription(false); setEditDescription(tournament.description || '') }}>Cancel</Button>
+                </Box>
+              ) : (
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                  <Typography variant="body2" color="text.secondary">
+                    {tournament.description || 'No description'}
+                  </Typography>
+                  <Button size="small" onClick={() => setEditingDescription(true)}>Edit</Button>
+                </Box>
+              )}
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
                 <Chip 
                   label={tournament.status} 
