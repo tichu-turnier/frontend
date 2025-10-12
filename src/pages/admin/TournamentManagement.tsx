@@ -21,6 +21,9 @@ import {
   DialogContent,
   DialogActions,
   TextField,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
 } from '@mui/material'
 import { toast } from 'react-toastify'
 import { 
@@ -28,6 +31,7 @@ import {
   PlayArrow as PlayArrowIcon,
   Stop as StopIcon,
   SkipNext as SkipNextIcon,
+  ExpandMore,
 } from '@mui/icons-material'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../hooks/useAuth'
@@ -45,6 +49,7 @@ export default function TournamentManagement() {
   const [player2Name, setPlayer2Name] = useState('')
   const [showFinishConfirm, setShowFinishConfirm] = useState(false)
   const [showTeamCodes, setShowTeamCodes] = useState(false)
+  const [expandedRound, setExpandedRound] = useState<number | false>(false)
   const { user, session } = useAuth()
   const navigate = useNavigate()
 
@@ -80,7 +85,9 @@ export default function TournamentManagement() {
       .select(`
         *,
         team1:team1_id(team_name),
-        team2:team2_id(team_name)
+        team2:team2_id(team_name),
+        tournament_rounds!inner(round_number),
+        games(id)
       `)
       .eq('tournament_id', id)
 
@@ -237,13 +244,23 @@ export default function TournamentManagement() {
     }
   }
 
+  const matchesByRound = matches.reduce((acc, match) => {
+    const round = match.tournament_rounds?.round_number || 0
+    if (!acc[round]) acc[round] = []
+    acc[round].push(match)
+    return acc
+  }, {} as Record<number, typeof matches>)
+
+  // Auto-expand current round on load
+  useEffect(() => {
+    if (tournament && expandedRound === false && !loading) {
+      setExpandedRound(tournament.current_round)
+    }
+  }, [tournament, loading])
+
   if (loading || !tournament) {
     return <Typography>Loading...</Typography>
   }
-
-  const currentRoundMatches = matches.filter(m => 
-    tournament.current_round > 0 && m.created_at
-  )
 
   return (
     <>
@@ -400,41 +417,75 @@ export default function TournamentManagement() {
             </Card>
           )}
 
-          {/* Current Round Matches */}
-          {currentRoundMatches.length > 0 && (
+          {/* Round Matches */}
+          {Object.keys(matchesByRound).length > 0 && (
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom>
-                  Round {tournament.current_round} Matches
+                  Tournament Matches
                 </Typography>
-                <TableContainer>
-                  <Table size="medium">
-                    <TableHead>
-                      <TableRow>
-                        <TableCell>Table</TableCell>
-                        <TableCell>Team 1</TableCell>
-                        <TableCell>Team 2</TableCell>
-                        <TableCell>Status</TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {currentRoundMatches.map((match) => (
-                        <TableRow key={match.id}>
-                          <TableCell>{match.table_number}</TableCell>
-                          <TableCell>{match.team1?.team_name}</TableCell>
-                          <TableCell>{match.team2?.team_name}</TableCell>
-                          <TableCell>
-                            <Chip 
-                              label={match.status} 
-                              color={match.status === 'completed' ? 'success' : 'default'}
-                              size="small"
-                            />
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
+                {Object.keys(matchesByRound)
+                  .map(Number)
+                  .sort((a, b) => b - a)
+                  .map(round => (
+                    <Accordion 
+                      key={round}
+                      expanded={expandedRound === round}
+                      onChange={(_, isExpanded) => setExpandedRound(isExpanded ? round : false)}
+                    >
+                      <AccordionSummary expandIcon={<ExpandMore />}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Typography 
+                            sx={{ 
+                              fontWeight: round === tournament.current_round ? 'bold' : 'normal',
+                              color: round === tournament.current_round ? 'primary.main' : 'inherit'
+                            }}
+                          >
+                            Round {round}
+                          </Typography>
+                          {round === tournament.current_round && (
+                            <Chip label="Current Round" size="small" color="primary" />
+                          )}
+                        </Box>
+                      </AccordionSummary>
+                      <AccordionDetails>
+                        <TableContainer>
+                          <Table size="medium">
+                            <TableHead>
+                              <TableRow>
+                                <TableCell>Table</TableCell>
+                                <TableCell>Team 1</TableCell>
+                                <TableCell>Team 2</TableCell>
+                                <TableCell>Status</TableCell>
+                              </TableRow>
+                            </TableHead>
+                            <TableBody>
+                              {matchesByRound[round].map((match) => (
+                                <TableRow key={match.id}>
+                                  <TableCell>{match.table_number}</TableCell>
+                                  <TableCell>{match.team1?.team_name}</TableCell>
+                                  <TableCell>{match.team2?.team_name}</TableCell>
+                                  <TableCell>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                      <Chip 
+                                        label={match.status} 
+                                        color={match.status === 'completed' ? 'success' : 'default'}
+                                        size="small"
+                                      />
+                                      <Typography variant="caption" color="text.secondary">
+                                        {match.games?.length || 0}/4
+                                      </Typography>
+                                    </Box>
+                                  </TableCell>
+                                </TableRow>
+                              ))}
+                            </TableBody>
+                          </Table>
+                        </TableContainer>
+                      </AccordionDetails>
+                    </Accordion>
+                  ))
+                }
               </CardContent>
             </Card>
           )}
