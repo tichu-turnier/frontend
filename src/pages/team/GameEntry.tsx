@@ -75,8 +75,8 @@ export default function GameEntry() {
       .from('tournament_matches')
       .select(`
         *,
-        team1:team1_id(id, team_name, player1:player1_id(name), player2:player2_id(name)),
-        team2:team2_id(id, team_name, player1:player1_id(name), player2:player2_id(name)),
+        team1:team1_id(id, team_name, player1:player1_id(id, name), player2:player2_id(id, name)),
+        team2:team2_id(id, team_name, player1:player1_id(id, name), player2:player2_id(id, name)),
         games(id)
       `)
       .or(`team1_id.eq.${teamId},team2_id.eq.${teamId}`)
@@ -100,10 +100,10 @@ export default function GameEntry() {
         *,
         match:match_id(
           *,
-          team1:team1_id(id, team_name, player1:player1_id(name), player2:player2_id(name)),
-          team2:team2_id(id, team_name, player1:player1_id(name), player2:player2_id(name))
+          team1:team1_id(id, team_name, player1:player1_id(id, name), player2:player2_id(id, name)),
+          team2:team2_id(id, team_name, player1:player1_id(id, name), player2:player2_id(id, name))
         ),
-        game_participants(*)
+        game_participants(player_id, team, position, tichu_call, grand_tichu_call, bomb_count)
       `)
       .eq('id', gameId)
       .single()
@@ -256,9 +256,16 @@ export default function GameEntry() {
 
       const gameNumber = (match.games?.length || 0) + 1
       
+      // Validate all player IDs are present
+      if (!match.team1.player1?.id || !match.team1.player2?.id || !match.team2.player1?.id || !match.team2.player2?.id) {
+        console.log(match)
+        setError('Missing player information. Please contact the tournament organizer.')
+        return
+      }
+
       const participants = [
         { 
-          player_id: match.team1.player1?.id, 
+          player_id: match.team1.player1.id, 
           team: 1, 
           position: positions[0], 
           bomb_count: bombCounts[0], 
@@ -267,7 +274,7 @@ export default function GameEntry() {
           tichu_success: positions[0] === 1 && tichuCalls[0] !== 'NONE'
         },
         { 
-          player_id: match.team1.player2?.id, 
+          player_id: match.team1.player2.id, 
           team: 1, 
           position: positions[1], 
           bomb_count: bombCounts[1], 
@@ -276,7 +283,7 @@ export default function GameEntry() {
           tichu_success: positions[1] === 1 && tichuCalls[1] !== 'NONE'
         },
         { 
-          player_id: match.team2.player1?.id, 
+          player_id: match.team2.player1.id, 
           team: 2, 
           position: positions[2], 
           bomb_count: bombCounts[2], 
@@ -285,7 +292,7 @@ export default function GameEntry() {
           tichu_success: positions[2] === 1 && tichuCalls[2] !== 'NONE'
         },
         { 
-          player_id: match.team2.player2?.id, 
+          player_id: match.team2.player2.id, 
           team: 2, 
           position: positions[3], 
           bomb_count: bombCounts[3], 

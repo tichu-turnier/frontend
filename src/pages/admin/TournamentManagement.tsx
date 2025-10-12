@@ -24,6 +24,8 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
+  Tabs,
+  Tab,
 } from '@mui/material'
 import { toast } from 'react-toastify'
 import { 
@@ -54,6 +56,9 @@ export default function TournamentManagement() {
   const [editingDescription, setEditingDescription] = useState(false)
   const [editName, setEditName] = useState('')
   const [editDescription, setEditDescription] = useState('')
+  const [currentTab, setCurrentTab] = useState(0)
+  const [sortBy, setSortBy] = useState<'points' | 'bombs'>('points')
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
   const { user, session } = useAuth()
   const navigate = useNavigate()
 
@@ -72,7 +77,7 @@ export default function TournamentManagement() {
       .eq('id', id)
       .single()
 
-    // Fetch teams
+    // Fetch teams with bomb counts
     const { data: teamsData } = await supabase
       .from('teams')
       .select(`
@@ -81,7 +86,26 @@ export default function TournamentManagement() {
         player2:player2_id(name)
       `)
       .eq('tournament_id', id)
-      .order('total_points', { ascending: false })
+
+    // Calculate bomb counts for each team
+    if (teamsData) {
+      for (const team of teamsData) {
+        const { data: bombData } = await supabase
+          .from('game_participants')
+          .select(`
+            bomb_count,
+            games!inner(
+              tournament_matches!inner(
+                tournament_id
+              )
+            )
+          `)
+          .in('player_id', [team.player1_id, team.player2_id])
+          .eq('games.tournament_matches.tournament_id', id)
+        
+        team.total_bombs = bombData?.reduce((sum, p) => sum + (p.bomb_count || 0), 0) || 0
+      }
+    }
 
     // Fetch current round matches
     const { data: matchesData } = await supabase
@@ -339,9 +363,7 @@ export default function TournamentManagement() {
         </Toolbar>
       </AppBar>
 
-      <Box sx={{ display: 'flex', p: 3, gap: 3, width: '100%', minHeight: '100vh' }}>
-        {/* Main Content */}
-        <Box sx={{ flex: 1 }}>
+      <Box sx={{ p: 3, width: '100%', minHeight: '100vh' }}>
           {/* Tournament Controls */}
           <Card sx={{ mb: 3 }}>
             <CardContent>
@@ -446,7 +468,18 @@ export default function TournamentManagement() {
             </CardContent>
           </Card>
 
-          {/* Setup Phase: Team Overview */}
+          {/* Tabs */}
+          <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
+            <Tabs value={currentTab} onChange={(_, newValue) => setCurrentTab(newValue)}>
+              <Tab label="Matches" />
+              <Tab label="Rankings" />
+            </Tabs>
+          </Box>
+
+          {/* Tab Content */}
+          {currentTab === 0 && (
+            <>
+              {/* Setup Phase: Team Overview */}
           {tournament.status === 'setup' && (
             <Card>
               <CardContent>
@@ -499,113 +532,176 @@ export default function TournamentManagement() {
             </Card>
           )}
 
-          {/* Round Matches */}
-          {Object.keys(matchesByRound).length > 0 && (
+              {/* Round Matches */}
+              {Object.keys(matchesByRound).length > 0 && (
+                <Card>
+                  <CardContent>
+                    <Typography variant="h6" gutterBottom>
+                      Tournament Matches
+                    </Typography>
+                    {Object.keys(matchesByRound)
+                      .map(Number)
+                      .sort((a, b) => b - a)
+                      .map(round => (
+                        <Accordion 
+                          key={round}
+                          expanded={expandedRound === round}
+                          onChange={(_, isExpanded) => setExpandedRound(isExpanded ? round : false)}
+                        >
+                          <AccordionSummary expandIcon={<ExpandMore />}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                              <Typography 
+                                sx={{ 
+                                  fontWeight: round === tournament.current_round ? 'bold' : 'normal',
+                                  color: round === tournament.current_round ? 'primary.main' : 'inherit'
+                                }}
+                              >
+                                Round {round}
+                              </Typography>
+                              {round === tournament.current_round && (
+                                <Chip label="Current Round" size="small" color="primary" />
+                              )}
+                            </Box>
+                          </AccordionSummary>
+                          <AccordionDetails>
+                            <TableContainer>
+                              <Table size="medium">
+                                <TableHead>
+                                  <TableRow>
+                                    <TableCell>Table</TableCell>
+                                    <TableCell>Team 1</TableCell>
+                                    <TableCell>Team 2</TableCell>
+                                    <TableCell>Status</TableCell>
+                                  </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                  {matchesByRound[round].map((match) => (
+                                    <TableRow key={match.id}>
+                                      <TableCell>{match.table_number}</TableCell>
+                                      <TableCell>{match.team1?.team_name}</TableCell>
+                                      <TableCell>{match.team2?.team_name}</TableCell>
+                                      <TableCell>
+                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                          <Chip 
+                                            label={match.status} 
+                                            color={match.status === 'completed' ? 'success' : 'default'}
+                                            size="small"
+                                          />
+                                          <Typography variant="caption" color="text.secondary">
+                                            {match.games?.length || 0}/4
+                                          </Typography>
+                                        </Box>
+                                      </TableCell>
+                                    </TableRow>
+                                  ))}
+                                </TableBody>
+                              </Table>
+                            </TableContainer>
+                          </AccordionDetails>
+                        </Accordion>
+                      ))
+                    }
+                  </CardContent>
+                </Card>
+              )}
+            </>
+          )}
+
+          {/* Rankings Tab */}
+          {currentTab === 1 && (
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom>
-                  Tournament Matches
+                  Team Rankings
                 </Typography>
-                {Object.keys(matchesByRound)
-                  .map(Number)
-                  .sort((a, b) => b - a)
-                  .map(round => (
-                    <Accordion 
-                      key={round}
-                      expanded={expandedRound === round}
-                      onChange={(_, isExpanded) => setExpandedRound(isExpanded ? round : false)}
-                    >
-                      <AccordionSummary expandIcon={<ExpandMore />}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <Typography 
-                            sx={{ 
-                              fontWeight: round === tournament.current_round ? 'bold' : 'normal',
-                              color: round === tournament.current_round ? 'primary.main' : 'inherit'
-                            }}
-                          >
-                            Round {round}
-                          </Typography>
-                          {round === tournament.current_round && (
-                            <Chip label="Current Round" size="small" color="primary" />
-                          )}
-                        </Box>
-                      </AccordionSummary>
-                      <AccordionDetails>
-                        <TableContainer>
-                          <Table size="medium">
-                            <TableHead>
-                              <TableRow>
-                                <TableCell>Table</TableCell>
-                                <TableCell>Team 1</TableCell>
-                                <TableCell>Team 2</TableCell>
-                                <TableCell>Status</TableCell>
-                              </TableRow>
-                            </TableHead>
-                            <TableBody>
-                              {matchesByRound[round].map((match) => (
-                                <TableRow key={match.id}>
-                                  <TableCell>{match.table_number}</TableCell>
-                                  <TableCell>{match.team1?.team_name}</TableCell>
-                                  <TableCell>{match.team2?.team_name}</TableCell>
-                                  <TableCell>
-                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                      <Chip 
-                                        label={match.status} 
-                                        color={match.status === 'completed' ? 'success' : 'default'}
-                                        size="small"
-                                      />
-                                      <Typography variant="caption" color="text.secondary">
-                                        {match.games?.length || 0}/4
-                                      </Typography>
-                                    </Box>
-                                  </TableCell>
-                                </TableRow>
-                              ))}
-                            </TableBody>
-                          </Table>
-                        </TableContainer>
-                      </AccordionDetails>
-                    </Accordion>
-                  ))
-                }
+                <TableContainer>
+                  <Table>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Rank</TableCell>
+                        <TableCell>Team Name</TableCell>
+                        <TableCell>Players</TableCell>
+                        <TableCell 
+                          align="right" 
+                          sx={{ cursor: 'pointer', userSelect: 'none' }}
+                          onClick={() => {
+                            if (sortBy === 'points') {
+                              setSortOrder(sortOrder === 'desc' ? 'asc' : 'desc')
+                            } else {
+                              setSortBy('points')
+                              setSortOrder('desc')
+                            }
+                          }}
+                        >
+                          Points {sortBy === 'points' && (sortOrder === 'desc' ? '↓' : '↑')}
+                        </TableCell>
+                        <TableCell 
+                          align="right" 
+                          sx={{ cursor: 'pointer', userSelect: 'none' }}
+                          onClick={() => {
+                            if (sortBy === 'bombs') {
+                              setSortOrder(sortOrder === 'desc' ? 'asc' : 'desc')
+                            } else {
+                              setSortBy('bombs')
+                              setSortOrder('desc')
+                            }
+                          }}
+                        >
+                          Bombs {sortBy === 'bombs' && (sortOrder === 'desc' ? '↓' : '↑')}
+                        </TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {[...teams].sort((a, b) => {
+                        if (sortBy === 'points') {
+                          const diff = (b.total_points || 0) - (a.total_points || 0)
+                          return sortOrder === 'desc' ? diff : -diff
+                        } else {
+                          const diff = (b.total_bombs || 0) - (a.total_bombs || 0)
+                          return sortOrder === 'desc' ? diff : -diff
+                        }
+                      }).map((team, index) => (
+                        <TableRow key={team.id}>
+                          <TableCell>
+                            <Typography variant="body2" fontWeight="bold">
+                              {index + 1}
+                            </Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Typography variant="body2" fontWeight="bold">
+                              {team.team_name}
+                            </Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Typography variant="body2">
+                              {team.player1?.name} & {team.player2?.name}
+                            </Typography>
+                          </TableCell>
+                          <TableCell align="right">
+                            <Typography variant="body2" fontWeight="bold">
+                              {team.total_points}
+                            </Typography>
+                          </TableCell>
+                          <TableCell align="right">
+                            <Typography variant="body2">
+                              {team.total_bombs || 0}
+                            </Typography>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+                {teams.length === 0 && (
+                  <Box sx={{ textAlign: 'center', py: 4 }}>
+                    <Typography variant="body1" color="text.secondary">
+                      No teams added yet.
+                    </Typography>
+                  </Box>
+                )}
               </CardContent>
             </Card>
           )}
-        </Box>
-
-        {/* Team Rankings - Right Sidebar (only during active tournament) */}
-        {tournament.status !== 'setup' && (
-          <Box sx={{ width: 300, flexShrink: 0 }}>
-            <Card sx={{ position: 'sticky', top: 16 }}>
-              <CardContent>
-                <Typography variant="h6" gutterBottom>
-                  Rankings
-                </Typography>
-                {teams.map((team, index) => (
-                  <Box key={team.id} sx={{ 
-                    display: 'flex', 
-                    justifyContent: 'space-between', 
-                    alignItems: 'center',
-                    py: 1,
-                    borderBottom: index < teams.length - 1 ? '1px solid #eee' : 'none'
-                  }}>
-                    <Box>
-                      <Typography variant="body2" fontWeight="bold">
-                        {index + 1}. {team.team_name}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        {team.player1?.name} & {team.player2?.name}
-                      </Typography>
-                    </Box>
-                    <Typography variant="body2" fontWeight="bold">
-                      {team.total_points}
-                    </Typography>
-                  </Box>
-                ))}
-              </CardContent>
-            </Card>
-          </Box>
-        )}
       </Box>
 
       {/* Add Team Dialog */}
