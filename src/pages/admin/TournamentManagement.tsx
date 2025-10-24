@@ -37,6 +37,7 @@ import {
 } from '@mui/icons-material'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../hooks/useAuth'
+import MatchDetailsDialog from '../../components/MatchDetailsDialog'
 import type { Tournament, Team, TournamentMatch } from '../../lib/types'
 
 export default function TournamentManagement() {
@@ -59,6 +60,8 @@ export default function TournamentManagement() {
   const [currentTab, setCurrentTab] = useState(0)
   const [sortBy, setSortBy] = useState<'victory_points' | 'points' | 'bombs'>('victory_points')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
+  const [selectedMatch, setSelectedMatch] = useState<TournamentMatch | null>(null)
+  const [showMatchDetails, setShowMatchDetails] = useState(false)
   const { user, session } = useAuth()
   const navigate = useNavigate()
   const isLoadingRef = useRef(false)
@@ -600,6 +603,16 @@ export default function TournamentManagement() {
                                           <Typography variant="caption" color="text.secondary">
                                             {match.games?.length || 0}/4
                                           </Typography>
+                                          <Button 
+                                            size="small" 
+                                            variant="outlined"
+                                            onClick={() => {
+                                              setSelectedMatch(match)
+                                              setShowMatchDetails(true)
+                                            }}
+                                          >
+                                            Details
+                                          </Button>
                                         </Box>
                                       </TableCell>
                                     </TableRow>
@@ -831,6 +844,13 @@ export default function TournamentManagement() {
           <Button onClick={() => setShowTeamCodes(false)}>Close</Button>
         </DialogActions>
       </Dialog>
+
+      {/* Match Details Dialog */}
+      <MatchDetailsDialog 
+        match={selectedMatch}
+        open={showMatchDetails}
+        onClose={() => setShowMatchDetails(false)}
+      />
     </>
   )
 }

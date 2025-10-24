@@ -16,6 +16,10 @@ import TeamLogin from './pages/team/TeamLogin'
 import MatchOverview from './pages/team/MatchOverview'
 import GameEntry from './pages/team/GameEntry'
 
+// Public Pages
+import PublicHome from './pages/PublicHome'
+import PublicTournament from './pages/PublicTournament'
+
 // Other Pages
 import HomePage from './pages/HomePage'
 
@@ -43,6 +47,10 @@ function App() {
       <CssBaseline />
       <Router basename='/frontend'>
         <Routes>
+          {/* Public Routes */}
+          <Route path="/public" element={<PublicHome />} />
+          <Route path="/public/tournament/:id" element={<PublicTournament />} />
+          
           {/* Home Page */}
           <Route path="/" element={<HomePage />} />
           
