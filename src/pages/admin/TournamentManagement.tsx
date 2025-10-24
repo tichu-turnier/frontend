@@ -57,7 +57,7 @@ export default function TournamentManagement() {
   const [editName, setEditName] = useState('')
   const [editDescription, setEditDescription] = useState('')
   const [currentTab, setCurrentTab] = useState(0)
-  const [sortBy, setSortBy] = useState<'points' | 'bombs'>('points')
+  const [sortBy, setSortBy] = useState<'victory_points' | 'points' | 'bombs'>('victory_points')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
   const { user, session } = useAuth()
   const navigate = useNavigate()
@@ -635,6 +635,20 @@ export default function TournamentManagement() {
                           align="right" 
                           sx={{ cursor: 'pointer', userSelect: 'none' }}
                           onClick={() => {
+                            if (sortBy === 'victory_points') {
+                              setSortOrder(sortOrder === 'desc' ? 'asc' : 'desc')
+                            } else {
+                              setSortBy('victory_points')
+                              setSortOrder('desc')
+                            }
+                          }}
+                        >
+                          Victory Points {sortBy === 'victory_points' && (sortOrder === 'desc' ? '↓' : '↑')}
+                        </TableCell>
+                        <TableCell 
+                          align="right" 
+                          sx={{ cursor: 'pointer', userSelect: 'none' }}
+                          onClick={() => {
                             if (sortBy === 'points') {
                               setSortOrder(sortOrder === 'desc' ? 'asc' : 'desc')
                             } else {
@@ -643,7 +657,7 @@ export default function TournamentManagement() {
                             }
                           }}
                         >
-                          Points {sortBy === 'points' && (sortOrder === 'desc' ? '↓' : '↑')}
+                          Tichu Points {sortBy === 'points' && (sortOrder === 'desc' ? '↓' : '↑')}
                         </TableCell>
                         <TableCell 
                           align="right" 
@@ -663,7 +677,10 @@ export default function TournamentManagement() {
                     </TableHead>
                     <TableBody>
                       {[...teams].sort((a, b) => {
-                        if (sortBy === 'points') {
+                        if (sortBy === 'victory_points') {
+                          const diff = (b.victory_points || 0) - (a.victory_points || 0)
+                          return sortOrder === 'desc' ? diff : -diff
+                        } else if (sortBy === 'points') {
                           const diff = (b.total_points || 0) - (a.total_points || 0)
                           return sortOrder === 'desc' ? diff : -diff
                         } else {
@@ -689,7 +706,12 @@ export default function TournamentManagement() {
                           </TableCell>
                           <TableCell align="right">
                             <Typography variant="body2" fontWeight="bold">
-                              {team.total_points}
+                              {team.victory_points || 0}
+                            </Typography>
+                          </TableCell>
+                          <TableCell align="right">
+                            <Typography variant="body2">
+                              {team.total_points || 0}
                             </Typography>
                           </TableCell>
                           <TableCell align="right">
