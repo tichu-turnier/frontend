@@ -49,9 +49,13 @@ interface MatchDetailsDialogProps {
   match: TournamentMatch | null
   open: boolean
   onClose: () => void
+  showActions?: boolean
+  onAddGame?: () => void
+  onEditGame?: (gameId: string) => void
+  canEdit?: boolean
 }
 
-export default function MatchDetailsDialog({ match, open, onClose }: MatchDetailsDialogProps) {
+export default function MatchDetailsDialog({ match, open, onClose, showActions = false, onAddGame, onEditGame, canEdit = false }: MatchDetailsDialogProps) {
   const [games, setGames] = useState<Game[]>([])
   const [loading, setLoading] = useState(false)
   const [expandedGame, setExpandedGame] = useState<string | false>(false)
@@ -136,6 +140,17 @@ export default function MatchDetailsDialog({ match, open, onClose }: MatchDetail
                     </Box>
                   </AccordionSummary>
                   <AccordionDetails>
+                    {showActions && onEditGame && canEdit && (
+                      <Box mb={1}>
+                        <Button 
+                          size="small" 
+                          variant="outlined" 
+                          onClick={() => onEditGame(game.id)}
+                        >
+                          Edit Game
+                        </Button>
+                      </Box>
+                    )}
                     <TableContainer component={Paper} variant="outlined">
                       <Table size="small">
                         <TableHead>
