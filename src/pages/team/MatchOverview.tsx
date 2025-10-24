@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import {
   Typography,
   Button,
@@ -12,12 +12,10 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Paper,
   Chip,
   AppBar,
   Toolbar,
   IconButton,
-  Collapse,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -45,21 +43,25 @@ export default function MatchOverview() {
   const [selectedMatch, setSelectedMatch] = useState<any>(null)
   const [showMatchDetails, setShowMatchDetails] = useState(false)
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
 
   useEffect(() => {
-    const auth = localStorage.getItem('teamAuth')
-    if (!auth) {
+    const tournamentId = searchParams.get('tournament')
+    const teamId = searchParams.get('team')
+    const accessToken = searchParams.get('token')
+    
+    if (!tournamentId || !teamId || !accessToken) {
       navigate('/team/login')
       return
     }
     
-    const parsedAuth = JSON.parse(auth)
-    setTeamAuth(parsedAuth)
-    fetchCurrentMatch(parsedAuth.teamId)
-  }, [navigate])
+    const auth = { tournamentId, teamId, accessToken }
+    setTeamAuth(auth)
+    fetchCurrentMatch(teamId)
+  }, [navigate, searchParams])
 
   const fetchCurrentMatch = async (teamId: string) => {
-    // First get tournament info
+    // First get tournament info and validate token
     const { data: teamData } = await supabase
       .from('teams')
       .select(`
@@ -74,6 +76,14 @@ export default function MatchOverview() {
 
     if (!teamData) {
       toast.error('Team not found')
+      navigate('/team/login')
+      return
+    }
+
+    // Validate access token
+    const accessToken = searchParams.get('token')
+    if (teamData.access_token !== accessToken) {
+      toast.error('Invalid access token')
       navigate('/team/login')
       return
     }
@@ -95,7 +105,7 @@ export default function MatchOverview() {
 
     setMatch(matchData)
     setGames(matchData?.games || [])
-    setTeamAuth(prev => ({ ...prev, tournament: teamData.tournament }))
+    setTeamAuth(prev => ({ ...prev, tournament: teamData.tournament, teamName: teamData.team_name }))
     
     // Get all matches in the tournament
     const { data: allMatchesData } = await supabase
@@ -115,7 +125,6 @@ export default function MatchOverview() {
   }
 
   const handleLogout = () => {
-    localStorage.removeItem('teamAuth')
     navigate('/team/login')
   }
 
@@ -346,8 +355,15 @@ export default function MatchOverview() {
                 </Typography>
                 <MatchDetailsView 
                   match={match}
-                  onAddGame={() => navigate('/team/game')}
-                  onEditGame={(gameId) => navigate(`/team/game?edit=${gameId}`)}
+                  onAddGame={() => {
+                    const params = new URLSearchParams(searchParams)
+                    navigate(`/team/game?${params.toString()}`)
+                  }}
+                  onEditGame={(gameId) => {
+                    const params = new URLSearchParams(searchParams)
+                    params.set('edit', gameId)
+                    navigate(`/team/game?${params.toString()}`)
+                  }}
                   canEdit={!match.team1_confirmed && !match.team2_confirmed}
                 />
               </CardContent>
@@ -570,11 +586,14 @@ export default function MatchOverview() {
           showActions={selectedMatch?.id === match?.id}
           onAddGame={() => {
             setShowMatchDetails(false)
-            navigate('/team/game')
+            const params = new URLSearchParams(searchParams)
+            navigate(`/team/game?${params.toString()}`)
           }}
           onEditGame={(gameId) => {
             setShowMatchDetails(false)
-            navigate(`/team/game?edit=${gameId}`)
+            const params = new URLSearchParams(searchParams)
+            params.set('edit', gameId)
+            navigate(`/team/game?${params.toString()}`)
           }}
           canEdit={!match?.team1_confirmed && !match?.team2_confirmed}
         />

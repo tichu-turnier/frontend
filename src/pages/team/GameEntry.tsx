@@ -52,21 +52,24 @@ export default function GameEntry() {
   const teams = players.map(p => p.team)
 
   useEffect(() => {
-    const auth = localStorage.getItem('teamAuth')
-    if (!auth) {
+    const tournamentId = searchParams.get('tournament')
+    const teamId = searchParams.get('team')
+    const accessToken = searchParams.get('token')
+    
+    if (!tournamentId || !teamId || !accessToken) {
       navigate('/team/login')
       return
     }
     
-    const parsedAuth = JSON.parse(auth)
-    setTeamAuth(parsedAuth)
+    const auth = { tournamentId, teamId, accessToken }
+    setTeamAuth(auth)
     
     const editId = searchParams.get('edit')
     if (editId) {
       setEditGameId(editId)
-      fetchGameForEdit(editId, parsedAuth.teamId)
+      fetchGameForEdit(editId, teamId)
     } else {
-      fetchCurrentMatch(parsedAuth.teamId)
+      fetchCurrentMatch(teamId)
     }
   }, [navigate, searchParams])
 
@@ -74,6 +77,19 @@ export default function GameEntry() {
   useEffect(() => updateBonusPoints(), [tichuCalls, teamScores, positions, doubleWinTeam])
 
   const fetchCurrentMatch = async (teamId: string) => {
+    // Validate token first
+    const { data: teamData } = await supabase
+      .from('teams')
+      .select('access_token')
+      .eq('id', teamId)
+      .single()
+
+    if (!teamData || teamData.access_token !== searchParams.get('token')) {
+      toast.error('Invalid access token')
+      navigate('/team/login')
+      return
+    }
+
     const { data: matchData, error } = await supabase
       .from('tournament_matches')
       .select(`
@@ -89,7 +105,8 @@ export default function GameEntry() {
     if (error) {
       console.error('Match fetch error:', error)
       toast.error('No active match found')
-      navigate('/team/match')
+      const params = new URLSearchParams(searchParams)
+      navigate(`/team/match?${params.toString()}`)
       return
     }
 
@@ -97,6 +114,19 @@ export default function GameEntry() {
   }
 
   const fetchGameForEdit = async (gameId: string, teamId: string) => {
+    // Validate token first
+    const { data: teamData } = await supabase
+      .from('teams')
+      .select('access_token')
+      .eq('id', teamId)
+      .single()
+
+    if (!teamData || teamData.access_token !== searchParams.get('token')) {
+      toast.error('Invalid access token')
+      navigate('/team/login')
+      return
+    }
+
     const { data: gameData, error: gameError } = await supabase
       .from('games')
       .select(`
@@ -113,7 +143,9 @@ export default function GameEntry() {
 
     if (gameError || !gameData) {
       toast.error('Game not found')
-      navigate('/team/match')
+      const params = new URLSearchParams(searchParams)
+      params.delete('edit')
+      navigate(`/team/match?${params.toString()}`)
       return
     }
 
@@ -121,14 +153,18 @@ export default function GameEntry() {
     const match = gameData.match
     if (match.team1_id !== teamId && match.team2_id !== teamId) {
       toast.error('Access denied')
-      navigate('/team/match')
+      const params = new URLSearchParams(searchParams)
+      params.delete('edit')
+      navigate(`/team/match?${params.toString()}`)
       return
     }
 
     // Check if match is still editable
     if (match.team1_confirmed || match.team2_confirmed) {
       toast.error('Match already confirmed, cannot edit')
-      navigate('/team/match')
+      const params = new URLSearchParams(searchParams)
+      params.delete('edit')
+      navigate(`/team/match?${params.toString()}`)
       return
     }
 
@@ -315,7 +351,9 @@ export default function GameEntry() {
 
       if (response.ok) {
         toast.success(editGameId ? 'Game updated successfully!' : 'Game saved successfully!')
-        navigate('/team/match')
+        const params = new URLSearchParams(searchParams)
+        params.delete('edit')
+        navigate(`/team/match?${params.toString()}`)
       } else {
         const errorData = await response.json()
         toast.error(errorData.error || 'Failed to save game')

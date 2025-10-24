@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import {
   Paper,
   Button,
@@ -34,10 +34,21 @@ export default function TeamLogin() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
 
   useEffect(() => {
+    // Check if already logged in via URL params
+    const tournamentId = searchParams.get('tournament')
+    const teamId = searchParams.get('team')
+    const accessToken = searchParams.get('token')
+    
+    if (tournamentId && teamId && accessToken) {
+      navigate(`/team/match?${searchParams.toString()}`)
+      return
+    }
+    
     fetchActiveTournaments()
-  }, [])
+  }, [navigate, searchParams])
 
   useEffect(() => {
     if (selectedTournament) {
@@ -82,14 +93,13 @@ export default function TeamLogin() {
       return
     }
 
-    localStorage.setItem('teamAuth', JSON.stringify({
-      teamId: team.id,
-      teamName: team.team_name,
-      tournamentId: selectedTournament,
-      accessToken: team.access_token
-    }))
+    const params = new URLSearchParams({
+      tournament: selectedTournament,
+      team: team.id,
+      token: team.access_token
+    })
 
-    navigate('/team/match')
+    navigate(`/team/match?${params.toString()}`)
     setLoading(false)
   }
 
