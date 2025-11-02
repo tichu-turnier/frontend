@@ -115,9 +115,14 @@ export default function MatchDetailsView({ match, onEditGame, canEdit = false }:
                 <AccordionSummary expandIcon={<ExpandMore />}>
                   <Box display="flex" justifyContent="space-between" width="100%" mr={2}>
                     <Typography>Game {game.game_number}</Typography>
-                    <Typography>
-                      {game.team1_total_score} ({game.team1_victory_points} VP) - {game.team2_total_score} ({game.team2_victory_points} VP)
-                    </Typography>
+                    <Box display="flex" alignItems="center" gap={1}>
+                      <Typography>
+                        {game.team1_total_score} ({game.team1_victory_points} VP) - {game.team2_total_score} ({game.team2_victory_points} VP)
+                      </Typography>
+                      {(game.team1_double_win || game.team2_double_win) && (
+                        <Chip label="Double Win" size="small" color="primary" />
+                      )}
+                    </Box>
                   </Box>
                 </AccordionSummary>
                 <AccordionDetails>
