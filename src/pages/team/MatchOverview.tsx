@@ -375,7 +375,10 @@ export default function MatchOverview() {
                 <Button
                   variant="contained"
                   startIcon={<AddIcon />}
-                  onClick={() => navigate('/team/game')}
+                  onClick={() => {
+                    const params = new URLSearchParams(searchParams)
+                    navigate(`/team/game?${params.toString()}`)
+                  }}
                 >
                   Add Game Result
                 </Button>
