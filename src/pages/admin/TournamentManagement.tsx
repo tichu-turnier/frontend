@@ -28,12 +28,14 @@ import {
   Tab,
 } from '@mui/material'
 import { toast } from 'react-toastify'
+import QRCode from 'qrcode'
 import { 
   ArrowBack as ArrowBackIcon,
   PlayArrow as PlayArrowIcon,
   Stop as StopIcon,
   SkipNext as SkipNextIcon,
   ExpandMore,
+  QrCode as QrCodeIcon,
 } from '@mui/icons-material'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../hooks/useAuth'
@@ -62,6 +64,9 @@ export default function TournamentManagement() {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
   const [selectedMatch, setSelectedMatch] = useState<TournamentMatch | null>(null)
   const [showMatchDetails, setShowMatchDetails] = useState(false)
+  const [qrCodeUrl, setQrCodeUrl] = useState<string>('')
+  const [showQrCode, setShowQrCode] = useState(false)
+  const [qrTeamName, setQrTeamName] = useState('')
   const { user, session } = useAuth()
   const navigate = useNavigate()
   const isLoadingRef = useRef(false)
@@ -510,6 +515,7 @@ export default function TournamentManagement() {
                         <TableCell>Player 1</TableCell>
                         <TableCell>Player 2</TableCell>
                         <TableCell>Access Code</TableCell>
+                        <TableCell>Login Link</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
@@ -528,6 +534,39 @@ export default function TournamentManagement() {
                               variant="outlined"
                               sx={{ fontFamily: 'monospace', fontSize: '0.9rem' }}
                             />
+                          </TableCell>
+                          <TableCell>
+                            <Box sx={{ display: 'flex', gap: 1 }}>
+                              <Button
+                                size="small"
+                                variant="outlined"
+                                onClick={() => {
+                                  const loginUrl = `${window.location.origin}/frontend/team/match?tournament=${tournament.id}&team=${team.id}&token=${team.access_token}`
+                                  navigator.clipboard.writeText(loginUrl)
+                                  toast.success('Login link copied to clipboard!')
+                                }}
+                              >
+                                Copy Link
+                              </Button>
+                              <Button
+                                size="small"
+                                variant="outlined"
+                                startIcon={<QrCodeIcon />}
+                                onClick={async () => {
+                                  const loginUrl = `${window.location.origin}/frontend/team/match?tournament=${tournament.id}&team=${team.id}&token=${team.access_token}`
+                                  try {
+                                    const qrDataUrl = await QRCode.toDataURL(loginUrl)
+                                    setQrCodeUrl(qrDataUrl)
+                                    setQrTeamName(team.team_name)
+                                    setShowQrCode(true)
+                                  } catch (err) {
+                                    toast.error('Failed to generate QR code')
+                                  }
+                                }}
+                              >
+                                QR
+                              </Button>
+                            </Box>
                           </TableCell>
                         </TableRow>
                       ))}
@@ -815,6 +854,7 @@ export default function TournamentManagement() {
                   <TableCell>Player 1</TableCell>
                   <TableCell>Player 2</TableCell>
                   <TableCell>Access Code</TableCell>
+                  <TableCell>Login Link</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -834,6 +874,39 @@ export default function TournamentManagement() {
                         sx={{ fontFamily: 'monospace', fontSize: '0.9rem' }}
                       />
                     </TableCell>
+                    <TableCell>
+                      <Box sx={{ display: 'flex', gap: 1 }}>
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          onClick={() => {
+                            const loginUrl = `${window.location.origin}/frontend/team/match?tournament=${tournament.id}&team=${team.id}&token=${team.access_token}`
+                            navigator.clipboard.writeText(loginUrl)
+                            toast.success('Login link copied to clipboard!')
+                          }}
+                        >
+                          Copy Link
+                        </Button>
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          startIcon={<QrCodeIcon />}
+                          onClick={async () => {
+                            const loginUrl = `${window.location.origin}/frontend/team/match?tournament=${tournament.id}&team=${team.id}&token=${team.access_token}`
+                            try {
+                              const qrDataUrl = await QRCode.toDataURL(loginUrl)
+                              setQrCodeUrl(qrDataUrl)
+                              setQrTeamName(team.team_name)
+                              setShowQrCode(true)
+                            } catch (err) {
+                              toast.error('Failed to generate QR code')
+                            }
+                          }}
+                        >
+                          QR
+                        </Button>
+                      </Box>
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -842,6 +915,26 @@ export default function TournamentManagement() {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setShowTeamCodes(false)}>Close</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* QR Code Dialog */}
+      <Dialog open={showQrCode} onClose={() => setShowQrCode(false)} maxWidth="sm">
+        <DialogTitle>QR Code for {qrTeamName}</DialogTitle>
+        <DialogContent sx={{ textAlign: 'center', py: 3 }}>
+          {qrCodeUrl && (
+            <img 
+              src={qrCodeUrl} 
+              alt="QR Code" 
+              style={{ maxWidth: '100%', height: 'auto' }}
+            />
+          )}
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
+            Scan this QR code to access the team login directly
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setShowQrCode(false)}>Close</Button>
         </DialogActions>
       </Dialog>
 
