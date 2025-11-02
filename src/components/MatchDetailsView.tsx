@@ -117,11 +117,8 @@ export default function MatchDetailsView({ match, onEditGame, canEdit = false }:
                     <Typography>Game {game.game_number}</Typography>
                     <Box display="flex" alignItems="center" gap={1}>
                       <Typography>
-                        {game.team1_total_score} ({game.team1_victory_points} VP) - {game.team2_total_score} ({game.team2_victory_points} VP)
+                        {game.team1_victory_points} VP - {game.team2_victory_points} VP
                       </Typography>
-                      {(game.team1_double_win || game.team2_double_win) && (
-                        <Chip label="Double Win" size="small" color="primary" />
-                      )}
                     </Box>
                   </Box>
                 </AccordionSummary>
@@ -147,8 +144,8 @@ export default function MatchDetailsView({ match, onEditGame, canEdit = false }:
                       </TableHead>
                       <TableBody>
                         <TableRow>
-                          <TableCell align="center">{game.team1_score} points</TableCell>
-                          <TableCell align="center">{game.team2_score} points</TableCell>
+                          <TableCell align="center">{game.team1_total_score} points</TableCell>
+                          <TableCell align="center">{game.team2_total_score} points</TableCell>
                         </TableRow>
                         {[0, 1].map(playerIndex => {
                           const team1Player = team1Players[playerIndex]
