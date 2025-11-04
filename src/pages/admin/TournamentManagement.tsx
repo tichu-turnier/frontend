@@ -71,6 +71,8 @@ export default function TournamentManagement() {
   const [qrTeamName, setQrTeamName] = useState('')
   const [showSettings, setShowSettings] = useState(false)
   const [allowGrandTichu, setAllowGrandTichu] = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [teamToDelete, setTeamToDelete] = useState<{ id: string; name: string } | null>(null)
   const { user, session } = useAuth()
   const navigate = useNavigate()
   const isLoadingRef = useRef(false)
@@ -296,6 +298,30 @@ export default function TournamentManagement() {
       }
     } catch (error) {
       console.error('Error adding team:', error)
+    }
+  }
+
+  const deleteTeam = async () => {
+    if (!session || !id || !teamToDelete) return
+
+    try {
+      const { error } = await supabase
+        .from('teams')
+        .delete()
+        .eq('id', teamToDelete.id)
+
+      if (error) {
+        toast.error('Failed to delete team')
+      } else {
+        toast.success('Team deleted successfully')
+        fetchTournamentData()
+      }
+    } catch (error) {
+      console.error('Error deleting team:', error)
+      toast.error('Error deleting team')
+    } finally {
+      setShowDeleteConfirm(false)
+      setTeamToDelete(null)
     }
   }
 
@@ -548,6 +574,7 @@ export default function TournamentManagement() {
                         <TableCell>Player 2</TableCell>
                         <TableCell>Access Code</TableCell>
                         <TableCell>Login Link</TableCell>
+                        <TableCell>Actions</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
@@ -599,6 +626,19 @@ export default function TournamentManagement() {
                                 QR
                               </Button>
                             </Box>
+                          </TableCell>
+                          <TableCell>
+                            <Button
+                              size="small"
+                              variant="outlined"
+                              color="error"
+                              onClick={() => {
+                                setTeamToDelete({ id: team.id, name: team.team_name })
+                                setShowDeleteConfirm(true)
+                              }}
+                            >
+                              Delete
+                            </Button>
                           </TableCell>
                         </TableRow>
                       ))}
@@ -994,6 +1034,22 @@ export default function TournamentManagement() {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setShowQrCode(false)}>Close</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Delete Team Confirmation */}
+      <Dialog open={showDeleteConfirm} onClose={() => setShowDeleteConfirm(false)}>
+        <DialogTitle>Delete Team</DialogTitle>
+        <DialogContent>
+          <Typography>
+            Are you sure you want to delete team "{teamToDelete?.name}"? This action cannot be undone.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setShowDeleteConfirm(false)}>Cancel</Button>
+          <Button onClick={deleteTeam} variant="contained" color="error">
+            Delete Team
+          </Button>
         </DialogActions>
       </Dialog>
 
