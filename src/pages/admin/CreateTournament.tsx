@@ -48,12 +48,12 @@ export default function CreateTournament() {
       const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to create tournament')
+        throw new Error(data.error || 'Turnier konnte nicht erstellt werden')
       }
 
       navigate(`/admin/tournament/${data.id}`)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred')
+      setError(err instanceof Error ? err.message : 'Ein Fehler ist aufgetreten')
     }
 
     setLoading(false)
@@ -71,7 +71,7 @@ export default function CreateTournament() {
             <ArrowBackIcon />
           </IconButton>
           <Typography variant="h6" component="div">
-            Create Tournament
+            Turnier erstellen
           </Typography>
         </Toolbar>
       </AppBar>
@@ -79,7 +79,7 @@ export default function CreateTournament() {
       <Box sx={{ p: 3, width: '100%', minHeight: '100vh' }}>
         <Paper elevation={3} sx={{ p: 4, maxWidth: 800, mx: 'auto' }}>
           <Typography variant="h4" component="h1" gutterBottom>
-            Create New Tournament
+            Neues Turnier erstellen
           </Typography>
 
           {error && (
@@ -91,7 +91,7 @@ export default function CreateTournament() {
           <Box component="form" onSubmit={handleSubmit}>
             <TextField
               fullWidth
-              label="Tournament Name"
+              label="Turniername"
               value={name}
               onChange={(e) => setName(e.target.value)}
               margin="normal"
@@ -99,7 +99,7 @@ export default function CreateTournament() {
             />
             <TextField
               fullWidth
-              label="Description"
+              label="Beschreibung"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               margin="normal"
@@ -108,7 +108,7 @@ export default function CreateTournament() {
             />
             <TextField
               fullWidth
-              label="Maximum Teams"
+              label="Maximale Anzahl Teams"
               type="number"
               value={maxTeams}
               onChange={(e) => setMaxTeams(parseInt(e.target.value))}
@@ -123,7 +123,7 @@ export default function CreateTournament() {
               sx={{ mt: 3, mb: 2 }}
               disabled={loading}
             >
-              {loading ? 'Creating...' : 'Create Tournament'}
+              {loading ? 'Erstelle...' : 'Turnier erstellen'}
             </Button>
           </Box>
         </Paper>

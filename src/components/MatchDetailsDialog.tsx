@@ -115,7 +115,7 @@ export default function MatchDetailsDialog({ match, open, onClose, showActions =
             sx={{ mr: 1 }}
           />
           <Typography variant="body2" color="text.secondary" component="span">
-            {games.length} / 4 Games played
+            {games.length} / 4 Spiele gespielt
           </Typography>
         </Box>
 
@@ -133,7 +133,7 @@ export default function MatchDetailsDialog({ match, open, onClose, showActions =
                 >
                   <AccordionSummary expandIcon={<ExpandMore />}>
                     <Box display="flex" justifyContent="space-between" width="100%" mr={2}>
-                      <Typography>Game {game.game_number}</Typography>
+                      <Typography>Spiel {game.game_number}</Typography>
                       <Box display="flex" alignItems="center" gap={1}>
                         <Typography>
                           {game.team1_victory_points} VP - {game.team2_victory_points} VP
@@ -149,7 +149,7 @@ export default function MatchDetailsDialog({ match, open, onClose, showActions =
                           variant="outlined" 
                           onClick={() => onEditGame(game.id)}
                         >
-                          Edit Game
+                          Spiel bearbeiten
                         </Button>
                       </Box>
                     )}
@@ -163,8 +163,8 @@ export default function MatchDetailsDialog({ match, open, onClose, showActions =
                         </TableHead>
                         <TableBody>
                           <TableRow>
-                            <TableCell align="center">{game.team1_score} points</TableCell>
-                            <TableCell align="center">{game.team2_score} points</TableCell>
+                            <TableCell align="center">{game.team1_score} Punkte</TableCell>
+                            <TableCell align="center">{game.team2_score} Punkte</TableCell>
                           </TableRow>
                           {[0, 1].map(playerIndex => {
                             const team1Player = team1Players[playerIndex]
@@ -212,13 +212,13 @@ export default function MatchDetailsDialog({ match, open, onClose, showActions =
 
         {games.length === 0 && !loading && (
           <Typography color="text.secondary" align="center" py={2}>
-            No games played yet
+            Noch keine Spiele gespielt
           </Typography>
         )}
       </DialogContent>
 
       <DialogActions>
-        <Button onClick={onClose}>Close</Button>
+        <Button onClick={onClose}>Schließen</Button>
       </DialogActions>
     </Dialog>
   )

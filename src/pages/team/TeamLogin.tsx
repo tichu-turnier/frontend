@@ -88,7 +88,7 @@ export default function TeamLogin() {
 
     const team = teams.find(t => t.id === selectedTeam)
     if (!team || team.access_token !== accessCode) {
-      setError('Invalid team or access code')
+      setError('Ungültiges Team oder Zugangscode')
       setLoading(false)
       return
     }
@@ -119,7 +119,7 @@ export default function TeamLogin() {
           <HomeIcon />
         </IconButton>
         <Typography variant="h4" component="h1" gutterBottom align="center">
-          Team Login
+          Team-Anmeldung
         </Typography>
         
         {error && (
@@ -130,11 +130,11 @@ export default function TeamLogin() {
 
         <Box component="form" onSubmit={handleLogin}>
           <FormControl fullWidth margin="normal" required>
-            <InputLabel>Select Tournament</InputLabel>
+            <InputLabel>Turnier auswählen</InputLabel>
             <Select
               value={selectedTournament}
               onChange={(e) => setSelectedTournament(e.target.value)}
-              label="Select Tournament"
+              label="Turnier auswählen"
             >
               {tournaments.map((tournament) => (
                 <MenuItem key={tournament.id} value={tournament.id}>
@@ -145,11 +145,11 @@ export default function TeamLogin() {
           </FormControl>
           
           <FormControl fullWidth margin="normal" required disabled={!selectedTournament}>
-            <InputLabel>Select Team</InputLabel>
+            <InputLabel>Team auswählen</InputLabel>
             <Select
               value={selectedTeam}
               onChange={(e) => setSelectedTeam(e.target.value)}
-              label="Select Team"
+              label="Team auswählen"
             >
               {teams.map((team) => (
                 <MenuItem key={team.id} value={team.id}>
@@ -166,7 +166,7 @@ export default function TeamLogin() {
             disabled={!selectedTeam}
             sx={{ mt: 2, py: 2 }}
           >
-            {accessCode ? `Access Code: ${accessCode}` : 'Select Access Code'}
+            {accessCode ? `Zugangscode: ${accessCode}` : 'Zugangscode auswählen'}
           </Button>
           
           <Button
@@ -176,17 +176,17 @@ export default function TeamLogin() {
             sx={{ mt: 3, mb: 2 }}
             disabled={loading || !selectedTeam || !accessCode}
           >
-            {loading ? 'Logging in...' : 'Login'}
+            {loading ? 'Anmelden...' : 'Anmelden'}
           </Button>
         </Box>
       </Paper>
 
       {/* Access Code Picker Dialog */}
       <Dialog open={showCodePicker} onClose={() => setShowCodePicker(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>Select Access Code</DialogTitle>
+        <DialogTitle>Zugangscode auswählen</DialogTitle>
         <DialogContent>
           <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>
-            Choose first word:
+            Erstes Wort wählen:
           </Typography>
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 3 }}>
             {adjectives.map((word) => (
@@ -202,7 +202,7 @@ export default function TeamLogin() {
           </Box>
           
           <Typography variant="h6" gutterBottom>
-            Choose second word:
+            Zweites Wort wählen:
           </Typography>
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
             {nouns.map((word) => (
@@ -226,7 +226,7 @@ export default function TeamLogin() {
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setShowCodePicker(false)}>Cancel</Button>
+          <Button onClick={() => setShowCodePicker(false)}>Abbrechen</Button>
           <Button 
             onClick={() => {
               setAccessCode(`${selectedAdjective}-${selectedNoun}`)
@@ -235,7 +235,7 @@ export default function TeamLogin() {
             variant="contained"
             disabled={!selectedAdjective || !selectedNoun}
           >
-            Confirm
+            Bestätigen
           </Button>
         </DialogActions>
       </Dialog>

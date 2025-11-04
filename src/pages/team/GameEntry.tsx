@@ -86,7 +86,7 @@ export default function GameEntry() {
       .single()
 
     if (!teamData || teamData.access_token !== searchParams.get('token')) {
-      toast.error('Invalid access token')
+      toast.error('Ungültiger Zugriffstoken')
       navigate('/team/login')
       return
     }
@@ -105,7 +105,7 @@ export default function GameEntry() {
 
     if (error) {
       console.error('Match fetch error:', error)
-      toast.error('No active match found')
+      toast.error('Kein aktives Spiel gefunden')
       const params = new URLSearchParams(searchParams)
       navigate(`/team/match?${params.toString()}`)
       return
@@ -136,7 +136,7 @@ export default function GameEntry() {
       .single()
 
     if (!teamData || teamData.access_token !== searchParams.get('token')) {
-      toast.error('Invalid access token')
+      toast.error('Ungültiger Zugriffstoken')
       navigate('/team/login')
       return
     }
@@ -156,7 +156,7 @@ export default function GameEntry() {
       .single()
 
     if (gameError || !gameData) {
-      toast.error('Game not found')
+      toast.error('Spiel nicht gefunden')
       const params = new URLSearchParams(searchParams)
       params.delete('edit')
       navigate(`/team/match?${params.toString()}`)
@@ -166,7 +166,7 @@ export default function GameEntry() {
     // Check if team has access to this game
     const match = gameData.match
     if (match.team1_id !== teamId && match.team2_id !== teamId) {
-      toast.error('Access denied')
+      toast.error('Zugriff verweigert')
       const params = new URLSearchParams(searchParams)
       params.delete('edit')
       navigate(`/team/match?${params.toString()}`)
@@ -175,7 +175,7 @@ export default function GameEntry() {
 
     // Check if match is still editable
     if (match.team1_confirmed || match.team2_confirmed) {
-      toast.error('Match already confirmed, cannot edit')
+      toast.error('Begegnung bereits bestätigt, kann nicht bearbeitet werden')
       const params = new URLSearchParams(searchParams)
       params.delete('edit')
       navigate(`/team/match?${params.toString()}`)
@@ -304,26 +304,26 @@ export default function GameEntry() {
 
     try {
       if (doubleWinTeam === null && positions.some((pos) => pos === null)) {
-        setError('Please set the finishing position for all players.')
+        setError('Bitte setze die Endposition für alle Spieler.')
         return
       }
       
       if (doubleWinTeam !== null && positions.some((pos, idx) => pos === null && teams[idx] === doubleWinTeam)) {
-        setError('Please set positions for winning team players.')
+        setError('Bitte setze die Positionen für die Spieler des Gewinnerteams.')
         return
       }
 
       if (doubleWinTeam === null) {
         const uniquePositions = new Set(positions)
         if (uniquePositions.size !== 4 || ![1, 2, 3, 4].every((n) => uniquePositions.has(n))) {
-          setError('Positions must be unique and between 1 and 4.')
+          setError('Positionen müssen eindeutig und zwischen 1 und 4 sein.')
           return
         }
       } else {
         const nonNullPositions = positions.filter(pos => pos !== null)
         const uniquePositions = new Set(nonNullPositions)
         if (uniquePositions.size !== 2 || !uniquePositions.has(1) || !uniquePositions.has(2)) {
-          setError('For double win, only positions 1 and 2 should be set.')
+          setError('Bei Doppelsieg sollten nur die Positionen 1 und 2 gesetzt werden.')
           return
         }
       }
@@ -333,7 +333,7 @@ export default function GameEntry() {
       // Validate all player IDs are present
       if (!match.team1.player1?.id || !match.team1.player2?.id || !match.team2.player1?.id || !match.team2.player2?.id) {
         console.log(match)
-        setError('Missing player information. Please contact the tournament organizer.')
+        setError('Fehlende Spielerinformationen. Bitte kontaktiere den Turnierorganisator.')
         return
       }
 
@@ -377,30 +377,30 @@ export default function GameEntry() {
       })
 
       if (response.ok) {
-        toast.success(editGameId ? 'Game updated successfully!' : 'Game saved successfully!')
+        toast.success(editGameId ? 'Spiel erfolgreich aktualisiert!' : 'Spiel erfolgreich gespeichert!')
         const params = new URLSearchParams(searchParams)
         params.delete('edit')
         navigate(`/team/match?${params.toString()}`)
       } else {
         const errorData = await response.json()
-        toast.error(errorData.error || 'Failed to save game')
+        toast.error(errorData.error || 'Fehler beim Speichern des Spiels')
       }
     } catch (err) {
       console.error('Error saving game:', err)
-      toast.error('Error saving game')
+      toast.error('Fehler beim Speichern des Spiels')
     } finally {
       setIsSaving(false)
     }
   }
 
   if (!match) {
-    return <Typography>Loading...</Typography>
+    return <Typography>Lädt...</Typography>
   }
 
   return (
     <Box sx={{ p: 3 }}>
       <Typography variant="h5" gutterBottom>
-        {editGameId ? 'Edit Game Results' : 'Enter Game Results'}
+        {editGameId ? 'Spielergebnis bearbeiten' : 'Spielergebnis eingeben'}
       </Typography>
 
       <Table sx={{ "& .MuiTableCell-root": { py: 1, px: 1 } }}>
@@ -450,7 +450,7 @@ export default function GameEntry() {
                           minWidth: "36px",
                           height: "32px",
                         }}
-                        aria-label={`Set the finishing order for ${player.name} to the next available position`}
+                        aria-label={`Setze die Endposition für ${player.name} auf die nächste verfügbare Position`}
                         onClick={() => {
                           setPositions((prev) => {
                             const newPositions = [...prev];
@@ -467,7 +467,7 @@ export default function GameEntry() {
                           });
                         }}
                       >
-                        Finish
+                        Fertig
                       </Button>
                     ) : (
                       <Typography>{positions[idx]}.</Typography>
@@ -480,7 +480,7 @@ export default function GameEntry() {
                         minWidth: "36px",
                         height: "32px",
                       }}
-                      aria-label={`Reset the finishing order for ${player.name}`}
+                      aria-label={`Setze die Endposition für ${player.name} zurück`}
                       onClick={() => {
                         setPositions((prev) => {
                           const newPositions = [...prev];
@@ -505,7 +505,7 @@ export default function GameEntry() {
                   size="small"
                   value={tichuCalls[idx]}
                   onChange={(_, newVal) => handleTichuCallChange(idx, newVal, setTichuCalls)}
-                  aria-label={`Tichu call for player ${player.name}`}
+                  aria-label={`Tichu-Ansage für Spieler ${player.name}`}
                 >
                   {[allowGrandTichu ? "ST" : "Tichu", ...(allowGrandTichu ? ["GT"] : [])].map((tichu) => (
                     <ToggleButton key={tichu === "Tichu" ? "ST" : tichu} value={tichu === "Tichu" ? "ST" : tichu} aria-label={`Tichu call ${tichu}`}>
@@ -527,7 +527,7 @@ export default function GameEntry() {
                     height: "32px",
                     opacity: bombCounts[idx] === 0 ? "60%" : "100%",
                   }}
-                  aria-label={`Increment bomb count for player ${player.name}`}
+                  aria-label={`Erhöhe Bombenanzahl für Spieler ${player.name}`}
                   onClick={() => {
                     setBombCounts((prev) => {
                       const newCounter = [...prev];
@@ -546,7 +546,7 @@ export default function GameEntry() {
             {[1, 2].map((team) => (
               <TableCell align="center" colSpan={2}>
                 <Typography>
-                  Score
+                  Punkte
                 </Typography>
                 <Typography variant="h6">{doubleWinTeam != null ? 0 : teamScores[team - 1]}</Typography>
               </TableCell>
@@ -557,7 +557,7 @@ export default function GameEntry() {
             {[1, 2].map((team) => (
               <TableCell align="center" colSpan={2}>
                 <Typography>
-                  with bonus points
+                  mit Bonuspunkten
                 </Typography>
                 <Typography variant="h6">{teamTotalScores[team - 1]}</Typography>
               </TableCell>
@@ -568,7 +568,7 @@ export default function GameEntry() {
 
       <Box mb={1} sx={{ mt: 4 }}>
         <Typography variant="caption">
-          Team 1 Score
+          Team 1 Punkte
         </Typography>
         <Slider
           value={teamScores[0]}
@@ -584,13 +584,13 @@ export default function GameEntry() {
 
       {error && (
         <Typography color="error" mt={2}>
-          Error: {error}
+          Fehler: {error}
         </Typography>
       )}
 
       <Box mt={3} display="flex" gap={2}>
         <Button variant="contained" color="primary" onClick={handleSubmit} disabled={isSaving}>
-          Save Game
+          Spiel speichern
         </Button>
         <Button
           variant="outlined"

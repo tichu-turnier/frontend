@@ -26,11 +26,11 @@ export default function HomePage() {
     }}>
       <Paper elevation={3} sx={{ p: 4, maxWidth: 600, width: '100%' }}>
         <Typography variant="h3" component="h1" gutterBottom align="center">
-          Tichu Tournament
+          Tichu Turnier
         </Typography>
         
         <Typography variant="h6" color="text.secondary" align="center" sx={{ mb: 4 }}>
-          Choose your access level
+          Wähle deine Zugangsebene
         </Typography>
 
         <Grid container spacing={3}>
@@ -44,7 +44,7 @@ export default function HomePage() {
               sx={{ py: 3, flexDirection: 'column', gap: 1 }}
             >
               <Typography variant="h6">Admin</Typography>
-              <Typography variant="body2">Tournament Management</Typography>
+              <Typography variant="body2">Turnierverwaltung</Typography>
             </Button>
           </Grid>
           
@@ -58,7 +58,7 @@ export default function HomePage() {
               sx={{ py: 3, flexDirection: 'column', gap: 1 }}
             >
               <Typography variant="h6">Team</Typography>
-              <Typography variant="body2">Enter Game Results</Typography>
+              <Typography variant="body2">Spielergebnisse eingeben</Typography>
             </Button>
           </Grid>
           
@@ -71,8 +71,8 @@ export default function HomePage() {
               onClick={() => navigate('/public')}
               sx={{ py: 3, flexDirection: 'column', gap: 1 }}
             >
-              <Typography variant="h6">Public</Typography>
-              <Typography variant="body2">View Tournaments</Typography>
+              <Typography variant="h6">Öffentlich</Typography>
+              <Typography variant="body2">Turniere anschauen</Typography>
             </Button>
           </Grid>
         </Grid>

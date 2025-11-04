@@ -70,7 +70,7 @@ export default function PublicTournament() {
     return acc
   }, {} as Record<number, TournamentMatch[]>)
 
-  if (loading || !tournament) return <div>Loading...</div>
+  if (loading || !tournament) return <div>Lädt...</div>
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
@@ -89,9 +89,9 @@ export default function PublicTournament() {
 
       <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
         <Tabs value={currentTab} onChange={(_, value) => setCurrentTab(value)}>
-          <Tab label="Rankings" />
-          <Tab label="Matches" />
-          <Tab label="Statistics" />
+          <Tab label="Rangliste" />
+          <Tab label="Begegnungen" />
+          <Tab label="Statistiken" />
         </Tabs>
       </Box>
 
@@ -100,11 +100,11 @@ export default function PublicTournament() {
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell>Rank</TableCell>
+                <TableCell>Rang</TableCell>
                 <TableCell>Team</TableCell>
-                <TableCell>Players</TableCell>
-                <TableCell align="right">Victory Points</TableCell>
-                <TableCell align="right">Tichu Points</TableCell>
+                <TableCell>Spieler</TableCell>
+                <TableCell align="right">Siegpunkte</TableCell>
+                <TableCell align="right">Tichu-Punkte</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -132,7 +132,7 @@ export default function PublicTournament() {
               <Accordion key={round}>
                 <AccordionSummary expandIcon={<ExpandMore />}>
                   <Typography variant="h6">
-                    Round {round} ({roundMatches.length} Matches)
+                    Runde {round} ({roundMatches.length} Begegnungen)
                   </Typography>
                 </AccordionSummary>
                 <AccordionDetails>
@@ -161,7 +161,7 @@ export default function PublicTournament() {
                         </Box>
                       </Box>
                       <Typography variant="body2" color="text.secondary">
-                        {match.games?.length || 0} / 4 Games played
+                        {match.games?.length || 0} / 4 Spiele gespielt
                       </Typography>
                     </Box>
                   ))}
@@ -173,7 +173,7 @@ export default function PublicTournament() {
 
       {currentTab === 2 && (
         <Typography variant="h6" color="text.secondary" align="center" py={4}>
-          Statistics coming soon...
+          Statistiken kommen bald...
         </Typography>
       )}
 

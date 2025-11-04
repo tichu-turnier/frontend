@@ -58,7 +58,7 @@ export default function LoginPage() {
           <HomeIcon />
         </IconButton>
         <Typography variant="h4" component="h1" gutterBottom align="center">
-          Tournament Admin
+          Turnier-Admin
         </Typography>
         
         {error && (
@@ -70,7 +70,7 @@ export default function LoginPage() {
         <Box component="form" onSubmit={handleSubmit}>
           <TextField
             fullWidth
-            label="Email"
+            label="E-Mail"
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -79,7 +79,7 @@ export default function LoginPage() {
           />
           <TextField
             fullWidth
-            label="Password"
+            label="Passwort"
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
@@ -93,7 +93,7 @@ export default function LoginPage() {
             sx={{ mt: 3, mb: 2 }}
             disabled={loading}
           >
-            {loading ? 'Signing in...' : 'Sign In'}
+            {loading ? 'Anmelden...' : 'Anmelden'}
           </Button>
         </Box>
       </Paper>

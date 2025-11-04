@@ -63,7 +63,7 @@ export default function Dashboard() {
   }
 
   if (loading) {
-    return <Typography>Loading...</Typography>
+    return <Typography>Laden...</Typography>
   }
 
   return (
@@ -71,10 +71,10 @@ export default function Dashboard() {
       <AppBar position="static">
         <Toolbar>
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            Tournament Manager
+            Turnier-Manager
           </Typography>
           <Button color="inherit" onClick={handleLogout} startIcon={<LogoutIcon />}>
-            Logout
+            Abmelden
           </Button>
         </Toolbar>
       </AppBar>
@@ -82,14 +82,14 @@ export default function Dashboard() {
       <Box sx={{ p: 3, width: '100%', minHeight: '100vh' }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
           <Typography variant="h4" component="h1">
-            Tournaments
+            Turniere
           </Typography>
           <Button
             variant="contained"
             startIcon={<AddIcon />}
             onClick={() => navigate('/admin/create')}
           >
-            Create Tournament
+            Turnier erstellen
           </Button>
         </Box>
 
@@ -98,12 +98,12 @@ export default function Dashboard() {
             <TableHead>
               <TableRow>
                 <TableCell>Name</TableCell>
-                <TableCell>Description</TableCell>
-                <TableCell>Owner</TableCell>
+                <TableCell>Beschreibung</TableCell>
+                <TableCell>Besitzer</TableCell>
                 <TableCell>Status</TableCell>
-                <TableCell>Round</TableCell>
+                <TableCell>Runde</TableCell>
                 <TableCell>Teams</TableCell>
-                <TableCell>Actions</TableCell>
+                <TableCell>Aktionen</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -115,7 +115,7 @@ export default function Dashboard() {
                     <TableCell>{tournament.description}</TableCell>
                     <TableCell>
                       <Typography variant="body2" color={isOwner ? 'inherit' : 'text.secondary'}>
-                        {isOwner ? 'You' : `${tournament.created_by?.slice(0, 8)}...`}
+                        {isOwner ? 'Du' : `${tournament.created_by?.slice(0, 8)}...`}
                       </Typography>
                     </TableCell>
                     <TableCell>
@@ -133,7 +133,7 @@ export default function Dashboard() {
                         onClick={() => navigate(`/admin/tournament/${tournament.id}`)}
                         disabled={!isOwner}
                       >
-                        Manage
+                        Verwalten
                       </Button>
                     </TableCell>
                   </TableRow>
@@ -146,7 +146,7 @@ export default function Dashboard() {
         {tournaments.length === 0 && (
           <Box sx={{ textAlign: 'center', mt: 4 }}>
             <Typography variant="h6" color="text.secondary">
-              No tournaments yet
+              Noch keine Turniere
             </Typography>
             <Button
               variant="contained"
@@ -154,7 +154,7 @@ export default function Dashboard() {
               onClick={() => navigate('/admin/create')}
               sx={{ mt: 2 }}
             >
-              Create Your First Tournament
+              Dein erstes Turnier erstellen
             </Button>
           </Box>
         )}

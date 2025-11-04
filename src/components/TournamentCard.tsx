@@ -24,9 +24,9 @@ export default function TournamentCard({ tournament }: TournamentCardProps) {
 
   const getStatusLabel = (status: string) => {
     switch (status) {
-      case 'setup': return 'Setup'
-      case 'active': return 'Active'
-      case 'completed': return 'Completed'
+      case 'setup': return 'Vorbereitung'
+      case 'active': return 'Aktiv'
+      case 'completed': return 'Abgeschlossen'
       default: return status
     }
   }
@@ -60,7 +60,7 @@ export default function TournamentCard({ tournament }: TournamentCardProps) {
           />
           {tournament.status === 'active' && tournament.current_round > 0 && (
             <Chip 
-              label={`Round ${tournament.current_round}`} 
+              label={`Runde ${tournament.current_round}`} 
               variant="outlined"
               size="small"
             />
@@ -78,7 +78,7 @@ export default function TournamentCard({ tournament }: TournamentCardProps) {
           fullWidth
           onClick={() => navigate(`/public/tournament/${tournament.id}`)}
         >
-          View Details
+          Details anzeigen
         </Button>
       </Box>
     </Card>

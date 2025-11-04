@@ -75,7 +75,7 @@ export default function MatchOverview() {
       .single()
 
     if (!teamData) {
-      toast.error('Team not found')
+      toast.error('Team nicht gefunden')
       navigate('/team/login')
       return
     }
@@ -83,7 +83,7 @@ export default function MatchOverview() {
     // Validate access token
     const accessToken = searchParams.get('token')
     if (teamData.access_token !== accessToken) {
-      toast.error('Invalid access token')
+      toast.error('Ungültiger Zugangscode')
       navigate('/team/login')
       return
     }
@@ -145,14 +145,14 @@ export default function MatchOverview() {
       })
 
       if (response.ok) {
-        toast.success('Match confirmed!')
+        toast.success('Begegnung bestätigt!')
         fetchCurrentMatch(teamAuth.teamId)
       } else {
         const errorData = await response.json()
-        toast.error(`Failed to confirm: ${errorData.error || 'Unknown error'}`)
+        toast.error(`Bestätigung fehlgeschlagen: ${errorData.error || 'Unbekannter Fehler'}`)
       }
     } catch (err) {
-      toast.error(`Confirm failed: ${err instanceof Error ? err.message : 'Unknown error'}`)
+      toast.error(`Bestätigung fehlgeschlagen: ${err instanceof Error ? err.message : 'Unbekannter Fehler'}`)
       console.error('Confirm exception:', err)
     }
   }
@@ -175,14 +175,14 @@ export default function MatchOverview() {
       })
 
       if (response.ok) {
-        toast.success('Confirmation retracted')
+        toast.success('Bestätigung zurückgezogen')
         fetchCurrentMatch(teamAuth.teamId)
       } else {
         const errorData = await response.json()
-        toast.error(`Failed to retract: ${errorData.error || 'Unknown error'}`)
+        toast.error(`Zurückziehen fehlgeschlagen: ${errorData.error || 'Unbekannter Fehler'}`)
       }
     } catch (err) {
-      toast.error(`Retract failed: ${err instanceof Error ? err.message : 'Unknown error'}`)
+      toast.error(`Zurückziehen fehlgeschlagen: ${err instanceof Error ? err.message : 'Unbekannter Fehler'}`)
       console.error('Retract exception:', err)
     }
   }
@@ -197,7 +197,7 @@ export default function MatchOverview() {
         <AppBar position="static">
           <Toolbar>
             <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-              {teamAuth?.teamName} - Tournament Status
+              {teamAuth?.teamName} - Turnierstatus
             </Typography>
             <IconButton color="inherit" onClick={handleLogout}>
               <LogoutIcon />
@@ -209,17 +209,17 @@ export default function MatchOverview() {
           <Card sx={{ mb: 3 }}>
             <CardContent>
               <Typography variant="h6" gutterBottom>
-                Tournament Status
+                Turnierstatus
               </Typography>
               <Box sx={{ mb: 2 }}>
                 <Typography variant="body1">
-                  Tournament: <strong>{teamAuth?.tournament?.name}</strong>
+                  Turnier: <strong>{teamAuth?.tournament?.name}</strong>
                 </Typography>
                 <Typography variant="body1" component="div">
                   Status: <Chip label={teamAuth?.tournament?.status} color={teamAuth?.tournament?.status === 'active' ? 'primary' : 'default'} size="small" />
                 </Typography>
                 <Typography variant="body1">
-                  Current Round: <strong>{teamAuth?.tournament?.current_round || 0}</strong>
+                  Aktuelle Runde: <strong>{teamAuth?.tournament?.current_round || 0}</strong>
                 </Typography>
                 <Typography variant="body1">
                   Teams: <strong>{teamAuth?.tournament?.teams?.length || 0}</strong>
@@ -227,10 +227,10 @@ export default function MatchOverview() {
               </Box>
               <Typography variant="body2" color="text.secondary">
                 {teamAuth?.tournament?.status === 'setup' 
-                  ? 'Tournament is being set up. Please wait for it to start.'
+                  ? 'Turnier wird vorbereitet. Bitte warten bis es startet.'
                   : teamAuth?.tournament?.status === 'active'
-                  ? 'No active match found. Please wait for the next round.'
-                  : 'Tournament has ended.'}
+                  ? 'Kein aktives Spiel gefunden. Bitte warten auf die nächste Runde.'
+                  : 'Turnier ist beendet.'}
               </Typography>
             </CardContent>
           </Card>
@@ -238,9 +238,9 @@ export default function MatchOverview() {
           {/* Tabs */}
           <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
             <Tabs value={currentTab} onChange={(_, newValue) => setCurrentTab(newValue)}>
-              <Tab label="Current Match" />
-              <Tab label="Past Matches" />
-              <Tab label="All Results" />
+              <Tab label="Aktuelle Begegnung" />
+              <Tab label="Vergangene Begegnungen" />
+              <Tab label="Alle Ergebnisse" />
             </Tabs>
           </Box>
         </Box>
@@ -305,9 +305,9 @@ export default function MatchOverview() {
         {/* Tabs */}
         <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
           <Tabs value={currentTab} onChange={(_, newValue) => setCurrentTab(newValue)}>
-            <Tab label="Current Match" />
-            <Tab label="Past Matches" />
-            <Tab label="All Results" />
+            <Tab label="Aktuelle Begegnung" />
+            <Tab label="Vergangene Begegnungen" />
+            <Tab label="Alle Ergebnisse" />
           </Tabs>
         </Box>
 
@@ -318,7 +318,7 @@ export default function MatchOverview() {
             <Card sx={{ mb: 3 }}>
               <CardContent>
                 <Typography variant="h6" gutterBottom>
-                  Match Overview
+                  Begegnungsübersicht
                 </Typography>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
                   <Box>
@@ -328,7 +328,7 @@ export default function MatchOverview() {
                     <Typography variant="body2">
                       {match.team1.player1?.name} & {match.team1.player2?.name}
                     </Typography>
-                    {match.team1_confirmed && <Chip label="Confirmed" color="success" size="small" />}
+                    {match.team1_confirmed && <Chip label="Bestätigt" color="success" size="small" />}
                   </Box>
                   <Typography variant="h6">vs</Typography>
                   <Box sx={{ textAlign: 'right' }}>
@@ -338,11 +338,11 @@ export default function MatchOverview() {
                     <Typography variant="body2">
                       {match.team2.player1?.name} & {match.team2.player2?.name}
                     </Typography>
-                    {match.team2_confirmed && <Chip label="Confirmed" color="success" size="small" />}
+                    {match.team2_confirmed && <Chip label="Bestätigt" color="success" size="small" />}
                   </Box>
                 </Box>
                 <Typography variant="body2" color="text.secondary">
-                  Games played: {games.length} / {maxGames}
+                  Gespielte Spiele: {games.length} / {maxGames}
                 </Typography>
               </CardContent>
             </Card>
@@ -351,7 +351,7 @@ export default function MatchOverview() {
             <Card sx={{ mb: 3 }}>
               <CardContent>
                 <Typography variant="h6" gutterBottom>
-                  Game Results
+                  Spielergebnisse
                 </Typography>
                 <MatchDetailsView 
                   match={match}
@@ -380,7 +380,7 @@ export default function MatchOverview() {
                     navigate(`/team/game?${params.toString()}`)
                   }}
                 >
-                  Add Game Result
+                  Spielergebnis hinzufügen
                 </Button>
               )}
               
@@ -390,7 +390,7 @@ export default function MatchOverview() {
                   color="success"
                   onClick={handleConfirmMatch}
                 >
-                  Confirm Match
+                  Begegnung bestätigen
                 </Button>
               )}
               
@@ -399,7 +399,7 @@ export default function MatchOverview() {
                   variant="outlined"
                   onClick={handleRetractConfirmation}
                 >
-                  Retract Confirmation
+                  Bestätigung zurückziehen
                 </Button>
               )}
             </Box>
@@ -408,10 +408,10 @@ export default function MatchOverview() {
               <Box sx={{ mt: 2, textAlign: 'center' }}>
                 <Typography variant="body2" color="text.secondary">
                   {ownConfirmed && opponentConfirmed 
-                    ? 'Both teams confirmed. Waiting for next round...'
+                    ? 'Beide Teams haben bestätigt. Warten auf nächste Runde...'
                     : ownConfirmed 
-                    ? 'Waiting for opponent confirmation...'
-                    : 'Please confirm the match results'}
+                    ? 'Warten auf Bestätigung des Gegners...'
+                    : 'Bitte bestätige die Spielergebnisse'}
                 </Typography>
               </Box>
             )}
@@ -423,17 +423,17 @@ export default function MatchOverview() {
           <Card>
             <CardContent>
               <Typography variant="h6" gutterBottom>
-                Past Matches
+                Vergangene Begegnungen
               </Typography>
               {allMatches.filter(m => m.status === 'completed' && (m.team1_id === teamAuth.teamId || m.team2_id === teamAuth.teamId)).length > 0 ? (
                 <TableContainer>
                   <Table>
                     <TableHead>
                       <TableRow>
-                        <TableCell>Round</TableCell>
-                        <TableCell>Opponent</TableCell>
-                        <TableCell>Games</TableCell>
-                        <TableCell>Actions</TableCell>
+                        <TableCell>Runde</TableCell>
+                        <TableCell>Gegner</TableCell>
+                        <TableCell>Spiele</TableCell>
+                        <TableCell>Aktionen</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
@@ -464,7 +464,7 @@ export default function MatchOverview() {
                   </Table>
                 </TableContainer>
               ) : (
-                <Typography color="text.secondary">No completed matches yet</Typography>
+                <Typography color="text.secondary">Noch keine abgeschlossenen Begegnungen</Typography>
               )}
             </CardContent>
           </Card>
@@ -475,7 +475,7 @@ export default function MatchOverview() {
           <Card>
             <CardContent>
               <Typography variant="h6" gutterBottom>
-                All Results by Round
+                Alle Ergebnisse nach Runden
               </Typography>
               {Object.entries(
                 allMatches.reduce((acc, match) => {
@@ -490,7 +490,7 @@ export default function MatchOverview() {
                   <Accordion key={round}>
                     <AccordionSummary expandIcon={<ExpandMore />}>
                       <Typography variant="h6">
-                        Round {round} ({roundMatches.length} Match{roundMatches.length !== 1 ? 'es' : ''})
+                        Runde {round} ({roundMatches.length} Begegnung{roundMatches.length !== 1 ? 'en' : ''})
                       </Typography>
                     </AccordionSummary>
                     <AccordionDetails>
@@ -520,7 +520,7 @@ export default function MatchOverview() {
                               </Box>
                             </Box>
                             <Typography variant="body2" color="text.secondary">
-                              {match.games?.length || 0} / 4 Games played
+                              {match.games?.length || 0} / 4 Spiele gespielt
                             </Typography>
                           </Box>
                         )
@@ -534,17 +534,17 @@ export default function MatchOverview() {
         
         {/* Game View Dialog */}
         <Dialog open={!!viewGame} onClose={() => setViewGame(null)} maxWidth="md" fullWidth>
-          <DialogTitle>Game {games.findIndex(g => g.id === viewGame?.id) + 1} Details</DialogTitle>
+          <DialogTitle>Spiel {games.findIndex(g => g.id === viewGame?.id) + 1} Details</DialogTitle>
           <DialogContent>
             {viewGame && (
               <Box>
                 <Table size="small">
                   <TableHead>
                     <TableRow>
-                      <TableCell>Player</TableCell>
+                      <TableCell>Spieler</TableCell>
                       <TableCell>Position</TableCell>
-                      <TableCell>Tichu Call</TableCell>
-                      <TableCell>Bombs</TableCell>
+                      <TableCell>Tichu-Ansage</TableCell>
+                      <TableCell>Bomben</TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
@@ -554,30 +554,30 @@ export default function MatchOverview() {
                     }).map((participant: any) => (
                         <TableRow key={participant.player_id}>
                           <TableCell>{playerNames[participant.player_id] || `Team ${participant.team} Player`}</TableCell>
-                          <TableCell>{participant.position || 'Double Win'}</TableCell>
+                          <TableCell>{participant.position || 'Doppelsieg'}</TableCell>
                           <TableCell>
-                            {participant.grand_tichu_call ? 'Grand Tichu' : participant.tichu_call ? 'Small Tichu' : 'None'}
+                            {participant.grand_tichu_call ? 'Großes Tichu' : participant.tichu_call ? 'Kleines Tichu' : 'Keine'}
                             {(participant.tichu_call || participant.grand_tichu_call) && 
-                             ` (${participant.tichu_success ? 'Success' : 'Failed'})`}
+                             ` (${participant.tichu_success ? 'Erfolgreich' : 'Fehlgeschlagen'})`}
                           </TableCell>
-                          <TableCell>{'💣'.repeat(participant.bomb_count || 0) || 'None'}</TableCell>
+                          <TableCell>{'💣'.repeat(participant.bomb_count || 0) || 'Keine'}</TableCell>
                         </TableRow>
                       ))}
                   </TableBody>
                 </Table>
                 <Box sx={{ mt: 2 }}>
-                  <Typography variant="subtitle2">Scores:</Typography>
-                  <Typography>Base Score: {match?.team1.team_name} {viewGame.team1_score} - {viewGame.team2_score} {match?.team2.team_name}</Typography>
-                  <Typography>Total Score: {match?.team1.team_name} {viewGame.team1_total_score} - {viewGame.team2_total_score} {match?.team2.team_name}</Typography>
+                  <Typography variant="subtitle2">Punkte:</Typography>
+                  <Typography>Grundpunkte: {match?.team1.team_name} {viewGame.team1_score} - {viewGame.team2_score} {match?.team2.team_name}</Typography>
+                  <Typography>Gesamtpunkte: {match?.team1.team_name} {viewGame.team1_total_score} - {viewGame.team2_total_score} {match?.team2.team_name}</Typography>
                   {(viewGame.team1_double_win || viewGame.team2_double_win) && (
-                    <Typography color="primary">Double Win: {viewGame.team1_double_win ? match?.team1.team_name : match?.team2.team_name}</Typography>
+                    <Typography color="primary">Doppelsieg: {viewGame.team1_double_win ? match?.team1.team_name : match?.team2.team_name}</Typography>
                   )}
                 </Box>
               </Box>
             )}
           </DialogContent>
           <DialogActions>
-            <Button onClick={() => setViewGame(null)}>Close</Button>
+            <Button onClick={() => setViewGame(null)}>Schließen</Button>
           </DialogActions>
         </Dialog>
 

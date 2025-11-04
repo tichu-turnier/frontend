@@ -192,11 +192,11 @@ export default function TournamentManagement() {
         fetchTournamentData()
       } else {
         const errorData = await response.json()
-        toast.error(errorData.error || 'Failed to start next round')
+        toast.error(errorData.error || 'Nächste Runde konnte nicht gestartet werden')
       }
     } catch (error) {
       console.error('Error starting next round:', error)
-      toast.error('Error starting next round')
+      toast.error('Fehler beim Starten der nächsten Runde')
     }
   }
 
@@ -233,13 +233,13 @@ export default function TournamentManagement() {
 
       if (!error) {
         fetchTournamentData()
-        toast.success('Tournament reopened successfully')
+        toast.success('Turnier erfolgreich wiedereröffnet')
       } else {
-        toast.error('Failed to reopen tournament')
+        toast.error('Turnier konnte nicht wiedereröffnet werden')
       }
     } catch (error) {
       console.error('Error reopening tournament:', error)
-      toast.error('Error reopening tournament')
+      toast.error('Fehler beim Wiedereröffnen des Turniers')
     }
   }
 
@@ -282,7 +282,7 @@ export default function TournamentManagement() {
       if (player1 && player2) {
         // Check for duplicate players
         if (player1.id === player2.id) {
-          toast.error('Player 1 and Player 2 cannot be the same person')
+          toast.error('Spieler 1 und Spieler 2 können nicht dieselbe Person sein')
           return
         }
 
@@ -299,11 +299,11 @@ export default function TournamentManagement() {
         if (error) {
           console.error('Team creation error:', error)
           if (error.code === '23505' && error.message.includes('teams_tournament_id_team_name_key')) {
-            toast.error('Team name already exists in this tournament')
+            toast.error('Teamname existiert bereits in diesem Turnier')
           } else if (error.message?.includes('Player is already in another team')) {
-            toast.error('One of these players is already in another team')
+            toast.error('Einer der Spieler ist bereits in einem anderen Team')
           } else {
-            toast.error('Failed to create team')
+            toast.error('Team konnte nicht erstellt werden')
           }
           return
         }
@@ -329,14 +329,14 @@ export default function TournamentManagement() {
         .eq('id', teamToDelete.id)
 
       if (error) {
-        toast.error('Failed to delete team')
+        toast.error('Team konnte nicht gelöscht werden')
       } else {
-        toast.success('Team deleted successfully')
+        toast.success('Team erfolgreich gelöscht')
         fetchTournamentData()
       }
     } catch (error) {
       console.error('Error deleting team:', error)
-      toast.error('Error deleting team')
+      toast.error('Fehler beim Löschen des Teams')
     } finally {
       setShowDeleteConfirm(false)
       setTeamToDelete(null)
@@ -352,11 +352,11 @@ export default function TournamentManagement() {
       .eq('id', id)
 
     if (error) {
-      toast.error('Failed to update tournament name')
+      toast.error('Turniername konnte nicht aktualisiert werden')
     } else {
       setTournament({ ...tournament, name: editName })
       setEditingName(false)
-      toast.success('Tournament name updated')
+      toast.success('Turniername aktualisiert')
     }
   }
 
@@ -369,11 +369,11 @@ export default function TournamentManagement() {
       .eq('id', id)
 
     if (error) {
-      toast.error('Failed to update tournament description')
+      toast.error('Turnierbeschreibung konnte nicht aktualisiert werden')
     } else {
       setTournament({ ...tournament, description: editDescription })
       setEditingDescription(false)
-      toast.success('Tournament description updated')
+      toast.success('Turnierbeschreibung aktualisiert')
     }
   }
 
@@ -390,11 +390,11 @@ export default function TournamentManagement() {
       .eq('id', id)
 
     if (error) {
-      toast.error('Failed to update tournament settings')
+      toast.error('Turniereinstellungen konnten nicht aktualisiert werden')
     } else {
       setTournament({ ...tournament, settings })
       setShowSettings(false)
-      toast.success('Tournament settings updated')
+      toast.success('Turniereinstellungen aktualisiert')
     }
   }
 
@@ -436,15 +436,15 @@ export default function TournamentManagement() {
                   size="small"
                   sx={{ '& .MuiInputBase-input': { color: 'white' } }}
                 />
-                <Button color="inherit" onClick={updateTournamentName}>Save</Button>
-                <Button color="inherit" onClick={() => { setEditingName(false); setEditName(tournament.name) }}>Cancel</Button>
+                <Button color="inherit" onClick={updateTournamentName}>Speichern</Button>
+                <Button color="inherit" onClick={() => { setEditingName(false); setEditName(tournament.name) }}>Abbrechen</Button>
               </>
             ) : (
               <>
                 <Typography variant="h6" component="div">
                   {tournament.name}
                 </Typography>
-                <Button color="inherit" size="small" onClick={() => setEditingName(true)}>Edit</Button>
+                <Button color="inherit" size="small" onClick={() => setEditingName(true)}>Bearbeiten</Button>
               </>
             )}
           </Box>
@@ -456,7 +456,7 @@ export default function TournamentManagement() {
           <Card sx={{ mb: 3 }}>
             <CardContent>
               <Typography variant="h6" gutterBottom>
-                Tournament Status
+                Turnierstatus
               </Typography>
               {editingDescription ? (
                 <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1, mb: 2 }}>
@@ -467,17 +467,17 @@ export default function TournamentManagement() {
                     value={editDescription}
                     onChange={(e) => setEditDescription(e.target.value)}
                     size="small"
-                    placeholder="Tournament description"
+                    placeholder="Turnierbeschreibung"
                   />
-                  <Button onClick={updateTournamentDescription}>Save</Button>
-                  <Button onClick={() => { setEditingDescription(false); setEditDescription(tournament.description || '') }}>Cancel</Button>
+                  <Button onClick={updateTournamentDescription}>Speichern</Button>
+                  <Button onClick={() => { setEditingDescription(false); setEditDescription(tournament.description || '') }}>Abbrechen</Button>
                 </Box>
               ) : (
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
                   <Typography variant="body2" color="text.secondary">
-                    {tournament.description || 'No description'}
+                    {tournament.description || 'Keine Beschreibung'}
                   </Typography>
-                  <Button size="small" onClick={() => setEditingDescription(true)}>Edit</Button>
+                  <Button size="small" onClick={() => setEditingDescription(true)}>Bearbeiten</Button>
                 </Box>
               )}
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
@@ -486,7 +486,7 @@ export default function TournamentManagement() {
                   color={tournament.status === 'active' ? 'primary' : tournament.status === 'completed' ? 'success' : 'default'}
                 />
                 <Typography variant="body2">
-                  Round: {tournament.current_round} | Teams: {teams.length} / {tournament.max_teams}
+                  Runde: {tournament.current_round} | Teams: {teams.length} / {tournament.max_teams}
                 </Typography>
               </Box>
               
@@ -497,13 +497,13 @@ export default function TournamentManagement() {
                       variant="outlined"
                       onClick={() => setShowAddTeam(true)}
                     >
-                      Add Team
+                      Team hinzufügen
                     </Button>
                     <Button
                       variant="outlined"
                       onClick={() => setShowSettings(true)}
                     >
-                      Tournament Settings
+                      Turniereinstellungen
                     </Button>
                     <Button
                       variant="contained"
@@ -511,7 +511,7 @@ export default function TournamentManagement() {
                       onClick={startTournament}
                       disabled={teams.length < 4}
                     >
-                      Start Tournament
+                      Turnier starten
                     </Button>
                   </>
                 )}
@@ -522,21 +522,21 @@ export default function TournamentManagement() {
                       variant="outlined"
                       onClick={() => setShowTeamCodes(true)}
                     >
-                      Show Team Codes
+                      Team-Codes anzeigen
                     </Button>
                     <Button
                       variant="contained"
                       startIcon={<SkipNextIcon />}
                       onClick={startNextRound}
                     >
-                      Start Next Round
+                      Nächste Runde starten
                     </Button>
                     <Button
                       variant="outlined"
                       startIcon={<StopIcon />}
                       onClick={() => setShowFinishConfirm(true)}
                     >
-                      Finish Tournament
+                      Turnier beenden
                     </Button>
                   </>
                 )}
@@ -547,14 +547,14 @@ export default function TournamentManagement() {
                       variant="outlined"
                       onClick={() => setShowTeamCodes(true)}
                     >
-                      Show Team Codes
+                      Team-Codes anzeigen
                     </Button>
                     <Button
                       variant="outlined"
                       startIcon={<PlayArrowIcon />}
                       onClick={reopenTournament}
                     >
-                      Reopen Tournament
+                      Turnier wiedereröffnen
                     </Button>
                   </>
                 )}
@@ -565,8 +565,8 @@ export default function TournamentManagement() {
           {/* Tabs */}
           <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
             <Tabs value={currentTab} onChange={(_, newValue) => setCurrentTab(newValue)}>
-              <Tab label="Matches" />
-              <Tab label="Rankings" />
+              <Tab label="Begegnungen" />
+              <Tab label="Rangliste" />
             </Tabs>
           </Box>
 
@@ -578,21 +578,21 @@ export default function TournamentManagement() {
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom>
-                  Teams & Access Codes
+                  Teams & Zugangscodes
                 </Typography>
                 <Typography variant="body2" color="text.secondary" gutterBottom>
-                  Share these access codes with the teams so they can enter their scores.
+                  Teile diese Zugangscodes mit den Teams, damit sie ihre Ergebnisse eingeben können.
                 </Typography>
                 <TableContainer>
                   <Table>
                     <TableHead>
                       <TableRow>
-                        <TableCell>Team Name</TableCell>
-                        <TableCell>Player 1</TableCell>
-                        <TableCell>Player 2</TableCell>
-                        <TableCell>Access Code</TableCell>
-                        <TableCell>Login Link</TableCell>
-                        <TableCell>Actions</TableCell>
+                        <TableCell>Teamname</TableCell>
+                        <TableCell>Spieler 1</TableCell>
+                        <TableCell>Spieler 2</TableCell>
+                        <TableCell>Zugangscode</TableCell>
+                        <TableCell>Login-Link</TableCell>
+                        <TableCell>Aktionen</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
@@ -620,10 +620,10 @@ export default function TournamentManagement() {
                                 onClick={() => {
                                   const loginUrl = `${window.location.origin}/frontend/team/match?tournament=${tournament.id}&team=${team.id}&token=${team.access_token}`
                                   navigator.clipboard.writeText(loginUrl)
-                                  toast.success('Login link copied to clipboard!')
+                                  toast.success('Login-Link in Zwischenablage kopiert!')
                                 }}
                               >
-                                Copy Link
+                                Link kopieren
                               </Button>
                               <Button
                                 size="small"
@@ -637,7 +637,7 @@ export default function TournamentManagement() {
                                     setQrTeamName(team.team_name)
                                     setShowQrCode(true)
                                   } catch (err) {
-                                    toast.error('Failed to generate QR code')
+                                    toast.error('QR-Code konnte nicht generiert werden')
                                   }
                                 }}
                               >
@@ -655,7 +655,7 @@ export default function TournamentManagement() {
                                 setShowDeleteConfirm(true)
                               }}
                             >
-                              Delete
+                              Löschen
                             </Button>
                           </TableCell>
                         </TableRow>
@@ -666,7 +666,7 @@ export default function TournamentManagement() {
                 {teams.length === 0 && (
                   <Box sx={{ textAlign: 'center', py: 4 }}>
                     <Typography variant="body1" color="text.secondary">
-                      No teams added yet. Click "Add Team" to get started.
+                      Noch keine Teams hinzugefügt. Klicke auf "Team hinzufügen" um zu beginnen.
                     </Typography>
                   </Box>
                 )}
@@ -679,7 +679,7 @@ export default function TournamentManagement() {
                 <Card>
                   <CardContent>
                     <Typography variant="h6" gutterBottom>
-                      Tournament Matches
+                      Turnierspiele
                     </Typography>
                     {Object.keys(matchesByRound)
                       .map(Number)
@@ -698,10 +698,10 @@ export default function TournamentManagement() {
                                   color: round === tournament.current_round ? 'primary.main' : 'inherit'
                                 }}
                               >
-                                Round {round}
+                                Runde {round}
                               </Typography>
                               {round === tournament.current_round && (
-                                <Chip label="Current Round" size="small" color="primary" />
+                                <Chip label="Aktuelle Runde" size="small" color="primary" />
                               )}
                             </Box>
                           </AccordionSummary>
@@ -710,7 +710,7 @@ export default function TournamentManagement() {
                               <Table size="medium">
                                 <TableHead>
                                   <TableRow>
-                                    <TableCell>Table</TableCell>
+                                    <TableCell>Tisch</TableCell>
                                     <TableCell>Team 1</TableCell>
                                     <TableCell>Team 2</TableCell>
                                     <TableCell>Status</TableCell>
@@ -764,15 +764,15 @@ export default function TournamentManagement() {
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom>
-                  Team Rankings
+                  Team-Rangliste
                 </Typography>
                 <TableContainer>
                   <Table>
                     <TableHead>
                       <TableRow>
-                        <TableCell>Rank</TableCell>
-                        <TableCell>Team Name</TableCell>
-                        <TableCell>Players</TableCell>
+                        <TableCell>Rang</TableCell>
+                        <TableCell>Teamname</TableCell>
+                        <TableCell>Spieler</TableCell>
                         <TableCell 
                           align="right" 
                           sx={{ cursor: 'pointer', userSelect: 'none' }}
@@ -785,7 +785,7 @@ export default function TournamentManagement() {
                             }
                           }}
                         >
-                          Victory Points {sortBy === 'victory_points' && (sortOrder === 'desc' ? '↓' : '↑')}
+                          Siegpunkte {sortBy === 'victory_points' && (sortOrder === 'desc' ? '↓' : '↑')}
                         </TableCell>
                         <TableCell 
                           align="right" 
@@ -799,7 +799,7 @@ export default function TournamentManagement() {
                             }
                           }}
                         >
-                          Tichu Points {sortBy === 'points' && (sortOrder === 'desc' ? '↓' : '↑')}
+                          Tichu-Punkte {sortBy === 'points' && (sortOrder === 'desc' ? '↓' : '↑')}
                         </TableCell>
                         <TableCell 
                           align="right" 
@@ -813,7 +813,7 @@ export default function TournamentManagement() {
                             }
                           }}
                         >
-                          Bombs {sortBy === 'bombs' && (sortOrder === 'desc' ? '↓' : '↑')}
+                          Bomben {sortBy === 'bombs' && (sortOrder === 'desc' ? '↓' : '↑')}
                         </TableCell>
                       </TableRow>
                     </TableHead>
@@ -869,7 +869,7 @@ export default function TournamentManagement() {
                 {teams.length === 0 && (
                   <Box sx={{ textAlign: 'center', py: 4 }}>
                     <Typography variant="body1" color="text.secondary">
-                      No teams added yet.
+                      Noch keine Teams hinzugefügt.
                     </Typography>
                   </Box>
                 )}
@@ -880,71 +880,71 @@ export default function TournamentManagement() {
 
       {/* Add Team Dialog */}
       <Dialog open={showAddTeam} onClose={() => setShowAddTeam(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>Add Team</DialogTitle>
+        <DialogTitle>Team hinzufügen</DialogTitle>
         <DialogContent>
           <TextField
             fullWidth
-            label="Team Name"
+            label="Teamname"
             value={teamName}
             onChange={(e) => setTeamName(e.target.value)}
             margin="normal"
           />
           <TextField
             fullWidth
-            label="Player 1 Name"
+            label="Spieler 1 Name"
             value={player1Name}
             onChange={(e) => setPlayer1Name(e.target.value)}
             margin="normal"
           />
           <TextField
             fullWidth
-            label="Player 2 Name"
+            label="Spieler 2 Name"
             value={player2Name}
             onChange={(e) => setPlayer2Name(e.target.value)}
             margin="normal"
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setShowAddTeam(false)}>Cancel</Button>
+          <Button onClick={() => setShowAddTeam(false)}>Abbrechen</Button>
           <Button 
             onClick={addTeam} 
             variant="contained"
             disabled={!teamName || !player1Name || !player2Name}
           >
-            Add Team
+            Team hinzufügen
           </Button>
         </DialogActions>
       </Dialog>
 
       {/* Finish Tournament Confirmation */}
       <Dialog open={showFinishConfirm} onClose={() => setShowFinishConfirm(false)}>
-        <DialogTitle>Finish Tournament</DialogTitle>
+        <DialogTitle>Turnier beenden</DialogTitle>
         <DialogContent>
           <Typography>
-            Are you sure you want to finish this tournament? This will mark it as completed and calculate final standings.
+            Bist du sicher, dass du dieses Turnier beenden möchtest? Es wird als abgeschlossen markiert und die Endwertung berechnet.
           </Typography>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setShowFinishConfirm(false)}>Cancel</Button>
+          <Button onClick={() => setShowFinishConfirm(false)}>Abbrechen</Button>
           <Button onClick={finishTournament} variant="contained" color="error">
-            Finish Tournament
+            Turnier beenden
           </Button>
         </DialogActions>
       </Dialog>
 
       {/* Team Codes Dialog */}
       <Dialog open={showTeamCodes} onClose={() => setShowTeamCodes(false)} maxWidth="md" fullWidth>
-        <DialogTitle>Team Access Codes</DialogTitle>
+        <DialogTitle>Team-Zugangscodes</DialogTitle>
         <DialogContent>
           <TableContainer>
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell>Team Name</TableCell>
-                  <TableCell>Player 1</TableCell>
-                  <TableCell>Player 2</TableCell>
-                  <TableCell>Access Code</TableCell>
-                  <TableCell>Login Link</TableCell>
+                  <TableCell>Teamname</TableCell>
+                  <TableCell>Spieler 1</TableCell>
+                  <TableCell>Spieler 2</TableCell>
+                  <TableCell>Zugangscode</TableCell>
+                  <TableCell>Login-Link</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -972,10 +972,10 @@ export default function TournamentManagement() {
                           onClick={() => {
                             const loginUrl = `${window.location.origin}/frontend/team/match?tournament=${tournament.id}&team=${team.id}&token=${team.access_token}`
                             navigator.clipboard.writeText(loginUrl)
-                            toast.success('Login link copied to clipboard!')
+                            toast.success('Login-Link in Zwischenablage kopiert!')
                           }}
                         >
-                          Copy Link
+                          Link kopieren
                         </Button>
                         <Button
                           size="small"
@@ -1004,13 +1004,13 @@ export default function TournamentManagement() {
           </TableContainer>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setShowTeamCodes(false)}>Close</Button>
+          <Button onClick={() => setShowTeamCodes(false)}>Schließen</Button>
         </DialogActions>
       </Dialog>
 
       {/* Tournament Settings Dialog */}
       <Dialog open={showSettings} onClose={() => setShowSettings(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>Tournament Settings</DialogTitle>
+        <DialogTitle>Turniereinstellungen</DialogTitle>
         <DialogContent>
           <Box sx={{ py: 2 }}>
             <FormControlLabel
@@ -1020,24 +1020,24 @@ export default function TournamentManagement() {
                   onChange={(e) => setAllowGrandTichu(e.target.checked)}
                 />
               }
-              label="Allow Grand Tichu"
+              label="Großes Tichu erlauben"
             />
             <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-              When disabled, teams can only call Small Tichu during games.
+              Wenn deaktiviert, können Teams nur Kleines Tichu ansagen.
             </Typography>
           </Box>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setShowSettings(false)}>Cancel</Button>
+          <Button onClick={() => setShowSettings(false)}>Abbrechen</Button>
           <Button onClick={updateTournamentSettings} variant="contained">
-            Save Settings
+            Einstellungen speichern
           </Button>
         </DialogActions>
       </Dialog>
 
       {/* QR Code Dialog */}
       <Dialog open={showQrCode} onClose={() => setShowQrCode(false)} maxWidth="sm">
-        <DialogTitle>QR Code for {qrTeamName}</DialogTitle>
+        <DialogTitle>QR-Code für {qrTeamName}</DialogTitle>
         <DialogContent sx={{ textAlign: 'center', py: 3 }}>
           {qrCodeUrl && (
             <img 
@@ -1047,26 +1047,26 @@ export default function TournamentManagement() {
             />
           )}
           <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
-            Scan this QR code to access the team login directly
+            Scanne diesen QR-Code um direkt zum Team-Login zu gelangen
           </Typography>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setShowQrCode(false)}>Close</Button>
+          <Button onClick={() => setShowQrCode(false)}>Schließen</Button>
         </DialogActions>
       </Dialog>
 
       {/* Delete Team Confirmation */}
       <Dialog open={showDeleteConfirm} onClose={() => setShowDeleteConfirm(false)}>
-        <DialogTitle>Delete Team</DialogTitle>
+        <DialogTitle>Team löschen</DialogTitle>
         <DialogContent>
           <Typography>
-            Are you sure you want to delete team "{teamToDelete?.name}"? This action cannot be undone.
+            Bist du sicher, dass du das Team "{teamToDelete?.name}" löschen möchtest? Diese Aktion kann nicht rückgängig gemacht werden.
           </Typography>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setShowDeleteConfirm(false)}>Cancel</Button>
+          <Button onClick={() => setShowDeleteConfirm(false)}>Abbrechen</Button>
           <Button onClick={deleteTeam} variant="contained" color="error">
-            Delete Team
+            Team löschen
           </Button>
         </DialogActions>
       </Dialog>

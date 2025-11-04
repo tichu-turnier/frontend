@@ -45,14 +45,14 @@ export default function PublicHome() {
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
       <Typography variant="h3" component="h1" gutterBottom align="center">
-        Tichu Tournaments
+        Tichu Turniere
       </Typography>
 
       <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
         <Tabs value={currentTab} onChange={(_, value) => setCurrentTab(value)} centered>
-          <Tab label="Active Tournaments" />
-          <Tab label="Past Tournaments" />
-          <Tab label="All Tournaments" />
+          <Tab label="Aktive Turniere" />
+          <Tab label="Vergangene Turniere" />
+          <Tab label="Alle Turniere" />
         </Tabs>
       </Box>
 
@@ -67,7 +67,7 @@ export default function PublicHome() {
       {filteredTournaments.length === 0 && !loading && (
         <Box textAlign="center" py={4}>
           <Typography variant="h6" color="text.secondary">
-            No tournaments found
+            Keine Turniere gefunden
           </Typography>
         </Box>
       )}
