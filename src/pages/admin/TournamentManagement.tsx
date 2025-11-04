@@ -280,8 +280,14 @@ export default function TournamentManagement() {
       }
 
       if (player1 && player2) {
+        // Check for duplicate players
+        if (player1.id === player2.id) {
+          toast.error('Player 1 and Player 2 cannot be the same person')
+          return
+        }
+
         // Create team
-        await supabase
+        const { error } = await supabase
           .from('teams')
           .insert({
             tournament_id: id,
@@ -289,6 +295,18 @@ export default function TournamentManagement() {
             player1_id: player1.id,
             player2_id: player2.id
           })
+
+        if (error) {
+          console.error('Team creation error:', error)
+          if (error.code === '23505' && error.message.includes('teams_tournament_id_team_name_key')) {
+            toast.error('Team name already exists in this tournament')
+          } else if (error.message?.includes('Player is already in another team')) {
+            toast.error('One of these players is already in another team')
+          } else {
+            toast.error('Failed to create team')
+          }
+          return
+        }
 
         setShowAddTeam(false)
         setTeamName('')
