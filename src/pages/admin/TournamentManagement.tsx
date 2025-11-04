@@ -26,6 +26,8 @@ import {
   AccordionDetails,
   Tabs,
   Tab,
+  FormControlLabel,
+  Switch,
 } from '@mui/material'
 import { toast } from 'react-toastify'
 import QRCode from 'qrcode'
@@ -67,6 +69,8 @@ export default function TournamentManagement() {
   const [qrCodeUrl, setQrCodeUrl] = useState<string>('')
   const [showQrCode, setShowQrCode] = useState(false)
   const [qrTeamName, setQrTeamName] = useState('')
+  const [showSettings, setShowSettings] = useState(false)
+  const [allowGrandTichu, setAllowGrandTichu] = useState(false)
   const { user, session } = useAuth()
   const navigate = useNavigate()
   const isLoadingRef = useRef(false)
@@ -142,6 +146,7 @@ export default function TournamentManagement() {
     if (tournamentData) {
       setEditName(tournamentData.name)
       setEditDescription(tournamentData.description || '')
+      setAllowGrandTichu(tournamentData.settings?.allow_grand_tichu ?? false)
     }
     setLoading(false)
     isLoadingRef.current = false
@@ -328,6 +333,27 @@ export default function TournamentManagement() {
     }
   }
 
+  const updateTournamentSettings = async () => {
+    if (!tournament || !id) return
+
+    const settings = {
+      allow_grand_tichu: allowGrandTichu
+    }
+
+    const { error } = await supabase
+      .from('tournaments')
+      .update({ settings })
+      .eq('id', id)
+
+    if (error) {
+      toast.error('Failed to update tournament settings')
+    } else {
+      setTournament({ ...tournament, settings })
+      setShowSettings(false)
+      toast.success('Tournament settings updated')
+    }
+  }
+
   const matchesByRound = matches.reduce((acc, match) => {
     const round = match.tournament_rounds?.round_number || 0
     if (!acc[round]) acc[round] = []
@@ -428,6 +454,12 @@ export default function TournamentManagement() {
                       onClick={() => setShowAddTeam(true)}
                     >
                       Add Team
+                    </Button>
+                    <Button
+                      variant="outlined"
+                      onClick={() => setShowSettings(true)}
+                    >
+                      Tournament Settings
                     </Button>
                     <Button
                       variant="contained"
@@ -915,6 +947,33 @@ export default function TournamentManagement() {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setShowTeamCodes(false)}>Close</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Tournament Settings Dialog */}
+      <Dialog open={showSettings} onClose={() => setShowSettings(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>Tournament Settings</DialogTitle>
+        <DialogContent>
+          <Box sx={{ py: 2 }}>
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={allowGrandTichu}
+                  onChange={(e) => setAllowGrandTichu(e.target.checked)}
+                />
+              }
+              label="Allow Grand Tichu"
+            />
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+              When disabled, teams can only call Small Tichu during games.
+            </Typography>
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setShowSettings(false)}>Cancel</Button>
+          <Button onClick={updateTournamentSettings} variant="contained">
+            Save Settings
+          </Button>
         </DialogActions>
       </Dialog>
 

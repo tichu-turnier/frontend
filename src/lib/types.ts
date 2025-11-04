@@ -6,6 +6,9 @@ export interface Tournament {
   max_teams: number
   current_round: number
   total_rounds?: number
+  settings?: {
+    allow_grand_tichu: boolean
+  }
   created_at: string
   updated_at: string
 }

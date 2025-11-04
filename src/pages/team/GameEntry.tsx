@@ -27,6 +27,7 @@ const DOUBLE_WIN_POINTS = 200
 export default function GameEntry() {
   const [match, setMatch] = useState<any>(null)
   const [teamAuth, setTeamAuth] = useState<any>(null)
+  const [allowGrandTichu, setAllowGrandTichu] = useState(false)
   const [positions, setPositions] = useState<(number | null)[]>([null, null, null, null])
   const [tichuCalls, setTichuCalls] = useState<TichuCall[]>(['NONE', 'NONE', 'NONE', 'NONE'])
   const [bombCounts, setBombCounts] = useState<number[]>([0, 0, 0, 0])
@@ -111,6 +112,19 @@ export default function GameEntry() {
     }
 
     setMatch(matchData)
+    
+    // Get tournament settings
+    if (matchData) {
+      const { data: tournamentData } = await supabase
+        .from('tournaments')
+        .select('settings')
+        .eq('id', matchData.tournament_id)
+        .single()
+      
+      if (tournamentData?.settings) {
+        setAllowGrandTichu(tournamentData.settings.allow_grand_tichu ?? false)
+      }
+    }
   }
 
   const fetchGameForEdit = async (gameId: string, teamId: string) => {
@@ -169,6 +183,19 @@ export default function GameEntry() {
     }
 
     setMatch(match)
+    
+    // Get tournament settings
+    if (match) {
+      const { data: tournamentData } = await supabase
+        .from('tournaments')
+        .select('settings')
+        .eq('id', match.tournament_id)
+        .single()
+      
+      if (tournamentData?.settings) {
+        setAllowGrandTichu(tournamentData.settings.allow_grand_tichu ?? false)
+      }
+    }
     
     // Create player ID to name mapping
     const playerNames: Record<string, string> = {
@@ -480,8 +507,8 @@ export default function GameEntry() {
                   onChange={(_, newVal) => handleTichuCallChange(idx, newVal, setTichuCalls)}
                   aria-label={`Tichu call for player ${player.name}`}
                 >
-                  {["ST", "GT"].map((tichu) => (
-                    <ToggleButton key={tichu} value={tichu} aria-label={`Tichu call ${tichu}`}>
+                  {[allowGrandTichu ? "ST" : "Tichu", ...(allowGrandTichu ? ["GT"] : [])].map((tichu) => (
+                    <ToggleButton key={tichu === "Tichu" ? "ST" : tichu} value={tichu === "Tichu" ? "ST" : tichu} aria-label={`Tichu call ${tichu}`}>
                       {tichu}
                     </ToggleButton>
                   ))}
